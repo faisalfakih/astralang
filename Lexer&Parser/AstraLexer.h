@@ -71,7 +71,9 @@ enum TokenType {
     TOKEN_STRUCT, // 'struct';
     TOKEN_CLASS, // 'class'
     TOKEN_COLON, // ':'
-    TOKEN_THIS // 'this'
+    TOKEN_THIS, // 'this'
+    TOKEN_LSQUARE, // '['
+    TOKEN_RSQUARE // ']'
 };
 
 // Keyword List
@@ -258,6 +260,12 @@ std::vector<Token> Lexer(const std::string& input) {
                     tokens.push_back({TOKEN_OR_OR, "||"});
                     i++;
                 }
+                break;
+            case '[':
+                tokens.push_back({TOKEN_LSQUARE, "["});
+                break;
+            case ']':
+                tokens.push_back({TOKEN_RSQUARE, "]"});
                 break;
             default:
                 // Handle identifiers and keywords
