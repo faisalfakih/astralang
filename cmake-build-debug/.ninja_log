@@ -1,3 +1,6 @@
 # ninja log v5
-1	440	1696677972453139811	CMakeFiles/AstraLang.dir/Lexer/AstraLexer.cpp.o	cc0f8e36017b7273
-440	479	1696677972496385290	AstraLang	6e5c8d0b7b1cf88e
+1	434	1696685540014942768	CMakeFiles/AstraLang.dir/Lexer/AstraParser.cpp.o	97dfde28e4618dc4
+0	68	1696685659296077590	build.ninja	de22e04ff498b327
+0	409	1696685614449667420	CMakeFiles/AstraLang.dir/Lexer_Parser/AstraParser.cpp.o	5cf8e5ea9b721ac6
+409	443	1696685614485724853	AstraLang	ef7b82a14817c729
+1	471	1696682149937679673	CMakeFiles/AstraLang.dir/Lexer/AstraLexer.cpp.o	cc0f8e36017b7273

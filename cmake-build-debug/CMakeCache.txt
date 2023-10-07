@@ -219,6 +219,24 @@ CMAKE_STRIP:FILEPATH=/Library/Developer/CommandLineTools/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//Value Computed by CMake
+Project_BINARY_DIR:STATIC=/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug
+
+//Value Computed by CMake
+Project_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+Project_SOURCE_DIR:STATIC=/Users/faisalfakih/Desktop/Coding/AstraLang
+
+//Value Computed by CMake
+parser_BINARY_DIR:STATIC=/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug
+
+//Value Computed by CMake
+parser_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+parser_SOURCE_DIR:STATIC=/Users/faisalfakih/Desktop/Coding/AstraLang
+
 
 ########################
 # INTERNAL cache entries
