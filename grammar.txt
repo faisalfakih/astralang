@@ -1,0 +1,25 @@
+// Comments
+/*
+Multiline comments
+*/
+
+int main() { // main function
+	return 1; // Return an error
+	return 0; // Return without an error
+}
+print("Hello World!"); // Printing Hello World
+
+// Data Types
+int x = 10;
+short x = 10;
+long x = 10;
+float x = 10.0;
+double x = 10.0;
+char x = 'A';
+string x = "Hello World";
+
+// Type Casting
+int x = 10;
+string y = string(x);
+// datatype(variable) or (datatype)(variable)
+

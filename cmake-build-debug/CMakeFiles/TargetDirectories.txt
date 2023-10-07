@@ -1,0 +1,3 @@
+/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/AstraLang.dir
+/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/rebuild_cache.dir
