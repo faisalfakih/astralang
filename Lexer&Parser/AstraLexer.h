@@ -21,7 +21,7 @@ enum TokenType {
     TOKEN_SLASH,    // '/'
     TOKEN_LPAREN,   // '('
     TOKEN_RPAREN,   // ')'
-    TOKEN_AUTO_TYPE, // 'auto'
+    TOKEN_LET, // 'let'
     TOKEN_INT_TYPE, // 'int'
     TOKEN_SHORT_TYPE, // 'short'
     TOKEN_LONG_TYPE, // 'long'
@@ -41,7 +41,6 @@ enum TokenType {
     TOKEN_RETURN, // 'return'
     TOKEN_IF, // 'if'
     TOKEN_ELSE, // 'else'
-    TOKEN_ELSE_IF, // 'else if'
     TOKEN_WHILE, // 'while'
     TOKEN_FOR, // 'for'
     TOKEN_BREAK, // 'break'
@@ -63,11 +62,21 @@ enum TokenType {
     TOKEN_GREATER_EQUAL, // '>='
     TOKEN_LESS_EQUAL,    // '<='
     TOKEN_AND_AND,       // '&&'
-    TOKEN_OR_OR          // '||'
+    TOKEN_OR_OR,          // '||'
+    TOKEN_CHAR, // 'a'
+    TOKEN_STRING, // "hello world"
+    TOKEN_VECTOR, // 'vector';
+    TOKEN_MAP, // 'map';
+    TOKEN_UNORDERED_MAP, // 'unordered_map';
+    TOKEN_STRUCT, // 'struct';
+    TOKEN_CLASS, // 'class'
+    TOKEN_COLON, // ':'
+    TOKEN_THIS // 'this'
 };
 
 // Keyword List
 const std::unordered_map<std::string, TokenType> keywordMap = {
+        {"let", TOKEN_LET},
         {"int", TOKEN_INT_TYPE},
         {"short", TOKEN_SHORT_TYPE},
         {"long", TOKEN_LONG_TYPE},
@@ -77,11 +86,9 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"string", TOKEN_STRING_TYPE},
         {"bool", TOKEN_BOOL_TYPE},
         {"void", TOKEN_VOID_TYPE},
-        {"auto", TOKEN_AUTO_TYPE},
         {"fn", TOKEN_FN},
         {"return", TOKEN_RETURN},
         {"if", TOKEN_IF},
-        {"else if", TOKEN_ELSE_IF},
         {"else", TOKEN_ELSE},
         {"while", TOKEN_WHILE},
         {"for", TOKEN_FOR},
@@ -94,7 +101,13 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"finally", TOKEN_FINALLY},
         {"throw", TOKEN_THROW},
         {"print", TOKEN_PRINT},
-        {"read", TOKEN_READ}
+        {"read", TOKEN_READ},
+        {"vector", TOKEN_VECTOR},
+        {"map", TOKEN_MAP},
+        {"unordered_map", TOKEN_UNORDERED_MAP},
+        {"struct", TOKEN_STRUCT},
+        {"class", TOKEN_CLASS},
+        {"this", TOKEN_THIS}
 };
 
 
@@ -107,8 +120,50 @@ struct Token {
 // Lexer function that takes an input string and returns a list of tokens
 std::vector<Token> Lexer(const std::string& input) {
     std::vector<Token> tokens;  // List to store the recognized tokens
-    for (int i = 0; i < input.size(); i++) {
+    for (size_t i = 0; i < input.size(); i++) {
         switch (input[i]) {
+            case ' ':
+            case '\t':
+            case '\n':
+            case '\r':
+                break;
+            case '\'': // Start of a character literal
+            {
+                size_t start = i + 1;
+                i++;
+
+                if (i >= input.size() || input[i] == '\'') {
+                    // Handle error: Empty character literal
+                    tokens.push_back({TOKEN_INVALID, "EMPTY_CHAR_LITERAL"});
+                } else {
+                    char charValue = input[i];
+                    i++; // Move to the next character (should be the closing quote)
+
+                    if (i >= input.size() || input[i] != '\'') {
+                        // Handle error: Unterminated character literal
+                        tokens.push_back({TOKEN_INVALID, "UNTERMINATED_CHAR"});
+                    } else {
+                        tokens.push_back({TOKEN_CHAR, std::string(1, charValue)});
+                    }
+                }
+            }
+                break;
+            case '"': // Start of a string literal
+            {
+                size_t start = i + 1; // +1 to skip the opening quote
+                do {
+                    i++;
+                } while (i < input.size() && input[i] != '"');
+
+                if (i >= input.size()) {
+                    // Handle error: Unterminated string literal
+                    tokens.push_back({TOKEN_INVALID, "UNTERMINATED_STRING"});
+                } else {
+                    std::string strValue = input.substr(start, i - start);
+                    tokens.push_back({TOKEN_STRING, strValue});
+                }
+            }
+                break;
             case '=':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
                     tokens.push_back({TOKEN_EQUAL_EQUAL, "=="});
@@ -162,6 +217,9 @@ std::vector<Token> Lexer(const std::string& input) {
                 break;
             case ',':
                 tokens.push_back({TOKEN_COMMA, ","});
+                break;
+            case ':':
+                tokens.push_back({TOKEN_COLON, ":"});
                 break;
             case '!':
                 if (i + 1 < input.size() && input[i + 1] == '=') {

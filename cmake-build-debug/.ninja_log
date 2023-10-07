@@ -4,3 +4,7 @@
 0	409	1696685614449667420	CMakeFiles/AstraLang.dir/Lexer_Parser/AstraParser.cpp.o	5cf8e5ea9b721ac6
 409	443	1696685614485724853	AstraLang	ef7b82a14817c729
 1	471	1696682149937679673	CMakeFiles/AstraLang.dir/Lexer/AstraLexer.cpp.o	cc0f8e36017b7273
+0	602	1696690990062326527	CMakeFiles/AstraLang.dir/Lexer&Parser/AstraParser.cpp.o	c09aa5e12c0ec508
+602	641	1696690990106944518	AstraLang	626296ad0efc106
+0	536	1696691176501275483	CMakeFiles/AstraLang.dir/Lexer&Parser/AstraParser.cpp.o	c09aa5e12c0ec508
+536	573	1696691176540545960	AstraLang	626296ad0efc106
