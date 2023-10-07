@@ -1,0 +1,2 @@
+# Ignore save.sh at the root of the repository
+./save.sh
