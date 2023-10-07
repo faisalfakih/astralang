@@ -63,7 +63,7 @@ enum TokenType {
     TOKEN_LESS_EQUAL,    // '<='
     TOKEN_AND_AND,       // '&&'
     TOKEN_OR_OR,          // '||'
-    TOKEN_CHAR, // 'a'
+    TOKEN_CHAR_LITERAL, // 'a'
     TOKEN_STRING, // "hello world"
     TOKEN_VECTOR, // 'vector';
     TOKEN_MAP, // 'map';
@@ -114,201 +114,224 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
 
 
 // Struct to represent a single token with its type and actual string representation (lexeme)
+
 struct Token {
     TokenType type;
     std::string lexeme;
+    size_t line;
+    size_t column;
 };
 
-// Lexer function that takes an input string and returns a list of tokens
 std::vector<Token> Lexer(const std::string& input) {
-    std::vector<Token> tokens;  // List to store the recognized tokens
+    std::vector<Token> tokens;
+    size_t line = 1;
+    size_t column = 0;
+
     for (size_t i = 0; i < input.size(); i++) {
+        column++;
         switch (input[i]) {
             case ' ':
             case '\t':
+                break;
             case '\n':
+                line++;
+                column = 0;
+                break;
             case '\r':
                 break;
-            case '\'': // Start of a character literal
+            case '"':
             {
                 size_t start = i + 1;
                 i++;
-
-                if (i >= input.size() || input[i] == '\'') {
-                    // Handle error: Empty character literal
-                    tokens.push_back({TOKEN_INVALID, "EMPTY_CHAR_LITERAL"});
-                } else {
-                    char charValue = input[i];
-                    i++; // Move to the next character (should be the closing quote)
-
-                    if (i >= input.size() || input[i] != '\'') {
-                        // Handle error: Unterminated character literal
-                        tokens.push_back({TOKEN_INVALID, "UNTERMINATED_CHAR"});
-                    } else {
-                        tokens.push_back({TOKEN_CHAR, std::string(1, charValue)});
+                while (i < input.size() && input[i] != '"') {
+                    column++;
+                    if (input[i] == '\n') {
+                        line++;
+                        column = 0;
                     }
-                }
-            }
-                break;
-            case '"': // Start of a string literal
-            {
-                size_t start = i + 1; // +1 to skip the opening quote
-                do {
                     i++;
-                } while (i < input.size() && input[i] != '"');
-
-                if (i >= input.size()) {
-                    // Handle error: Unterminated string literal
-                    tokens.push_back({TOKEN_INVALID, "UNTERMINATED_STRING"});
+                }
+                if (i == input.size()) {
+                    tokens.push_back({TOKEN_INVALID, "UNTERMINATED_STRING", line, column});
                 } else {
                     std::string strValue = input.substr(start, i - start);
-                    tokens.push_back({TOKEN_STRING, strValue});
+                    tokens.push_back({TOKEN_STRING, strValue, line, column});
                 }
             }
                 break;
+            case '\'':
+            {
+                size_t start = i + 1;
+                i++;
+                while (i < input.size() && input[i] != '\'') {
+                    column++;
+                    if (input[i] == '\n') {
+                        line++;
+                        column = 0;
+                    }
+                    i++;
+                }
+                if (i == input.size() || i - start > 1) { // character literals should only be one character long
+                    tokens.push_back({TOKEN_INVALID, "INVALID_CHARACTER_LITERAL", line, column});
+                } else {
+                    std::string charValue = input.substr(start, i - start);
+                    tokens.push_back({TOKEN_CHAR_LITERAL, charValue, line, column});
+                }
+            }
+                break;
+
             case '=':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
-                    tokens.push_back({TOKEN_EQUAL_EQUAL, "=="});
+                    tokens.push_back({TOKEN_EQUAL_EQUAL, "==", line, column});
                     i++;
                 } else {
-                    tokens.push_back({TOKEN_EQUAL, "="});
+                    tokens.push_back({TOKEN_EQUAL, "=", line, column});
                 }
                 break;
             case '+':
-                tokens.push_back({TOKEN_PLUS, "+"});
+                tokens.push_back({TOKEN_PLUS, "+", line, column});
                 break;
             case '-':
                 if (i + 1 < input.size() && input[i + 1] == '>') {
-                    tokens.push_back({TOKEN_ARROW, "->"});
+                    tokens.push_back({TOKEN_ARROW, "->", line, column});
                     i++;
                 } else {
-                    tokens.push_back({TOKEN_MINUS, "-"});
+                    tokens.push_back({TOKEN_MINUS, "-", line, column});
                 }
                 break;
             case '*':
-                tokens.push_back({TOKEN_ASTERISK, "*"});
+                tokens.push_back({TOKEN_ASTERISK, "*", line, column});
                 break;
             case '/':
-                // Check for single-line comments
                 if (i + 1 < input.size() && input[i + 1] == '/') {
-                    while (i < input.size() && input[i] != '\n') i++;
-                }
-                    // Check for multi-line comments
-                else if (i + 1 < input.size() && input[i + 1] == '*') {
-                    i += 2;  // Move past '/*'
-                    while (i < input.size() && !(input[i] == '*' && i + 1 < input.size() && input[i + 1] == '/')) i++;
-                    if (i < input.size()) i++;  // Move past '*/'
+                    i++; // Move to the next character after '//'
+                    column++;
+                    while (i < input.size() && input[i] != '\n') {
+                        i++;
+                        column++;
+                    }
+                } else if (i + 1 < input.size() && input[i + 1] == '*') {
+                    i += 2;
+                    column += 2;
+                    while (i < input.size() && !(input[i] == '*' && i + 1 < input.size() && input[i + 1] == '/')) {
+                        if (input[i] == '\n') {
+                            line++;
+                            column = 0;
+                        }
+                        i++;
+                        column++;
+                    }
+                    if (i < input.size()) {
+                        i++;  // skip the closing '/'
+                    }
                 } else {
-                    tokens.push_back({TOKEN_SLASH, "/"});
+                    tokens.push_back({TOKEN_SLASH, "/", line, column});
                 }
                 break;
             case '(':
-                tokens.push_back({TOKEN_LPAREN, "("});
+                tokens.push_back({TOKEN_LPAREN, "(", line, column});
                 break;
             case ')':
-                tokens.push_back({TOKEN_RPAREN, ")"});
+                tokens.push_back({TOKEN_RPAREN, ")", line, column});
                 break;
             case ';':
-                tokens.push_back({TOKEN_SEMI_COLON, ";"});
+                tokens.push_back({TOKEN_SEMI_COLON, ";", line, column});
                 break;
             case '{':
-                tokens.push_back({TOKEN_LBRACE, "{"});
+                tokens.push_back({TOKEN_LBRACE, "{", line, column});
                 break;
             case '}':
-                tokens.push_back({TOKEN_RBRACE, "}"});
+                tokens.push_back({TOKEN_RBRACE, "}", line, column});
                 break;
             case ',':
-                tokens.push_back({TOKEN_COMMA, ","});
+                tokens.push_back({TOKEN_COMMA, ",", line, column});
                 break;
             case ':':
-                tokens.push_back({TOKEN_COLON, ":"});
+                tokens.push_back({TOKEN_COLON, ":", line, column});
                 break;
             case '!':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
-                    tokens.push_back({TOKEN_NOT_EQUAL, "!="});
+                    tokens.push_back({TOKEN_NOT_EQUAL, "!=", line, column});
                     i++;
                 } else {
-                    tokens.push_back({TOKEN_EXCLAMATION_MARK, "!"});
+                    tokens.push_back({TOKEN_EXCLAMATION_MARK, "!", line, column});
                 }
                 break;
             case '>':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
-                    tokens.push_back({TOKEN_GREATER_EQUAL, ">="});
+                    tokens.push_back({TOKEN_GREATER_EQUAL, ">=", line, column});
                     i++;
                 } else {
-                    tokens.push_back({TOKEN_GREATER, ">"});
+                    tokens.push_back({TOKEN_GREATER, ">", line, column});
                 }
                 break;
             case '<':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
-                    tokens.push_back({TOKEN_LESS_EQUAL, "<="});
+                    tokens.push_back({TOKEN_LESS_EQUAL, "<=", line, column});
                     i++;
                 } else {
-                    tokens.push_back({TOKEN_LESS, "<"});
+                    tokens.push_back({TOKEN_LESS, "<", line, column});
                 }
                 break;
             case '&':
                 if (i + 1 < input.size() && input[i + 1] == '&') {
-                    tokens.push_back({TOKEN_AND_AND, "&&"});
+                    tokens.push_back({TOKEN_AND_AND, "&&", line, column});
                     i++;
                 } else {
-                    tokens.push_back({TOKEN_AMPERSAND, "&"});
+                    tokens.push_back({TOKEN_AMPERSAND, "&", line, column});
                 }
                 break;
             case '|':
                 if (i + 1 < input.size() && input[i + 1] == '|') {
-                    tokens.push_back({TOKEN_OR_OR, "||"});
+                    tokens.push_back({TOKEN_OR_OR, "||", line, column});
                     i++;
                 }
                 break;
             case '[':
-                tokens.push_back({TOKEN_LSQUARE, "["});
+                tokens.push_back({TOKEN_LSQUARE, "[", line, column});
                 break;
             case ']':
-                tokens.push_back({TOKEN_RSQUARE, "]"});
+                tokens.push_back({TOKEN_RSQUARE, "]", line, column});
                 break;
             default:
-                // Handle identifiers and keywords
                 if (isalpha(input[i]) || input[i] == '_') {
                     size_t start = i;
-                    while (i < input.size() && (isalnum(input[i]) || input[i] == '_')) i++;
-                    std::string lexeme = input.substr(start, i - start);
-
-                    // Check for "else if"
-                    if (lexeme == "else" && i + 2 < input.size() && input.substr(i, 3) == " if") {
-                        lexeme += input.substr(i, 3);
-                        i += 2; // Adjust for " if"
+                    while (i < input.size() && (isalnum(input[i]) || input[i] == '_')) {
+                        i++;
+                        column++;
                     }
-
+                    std::string lexeme = input.substr(start, i - start);
                     auto it = keywordMap.find(lexeme);
                     if (it != keywordMap.end()) {
-                        tokens.push_back({it->second, lexeme});
+                        tokens.push_back({it->second, lexeme, line, column});
                     } else {
-                        tokens.push_back({TOKEN_IDENTIFIER, lexeme});
+                        tokens.push_back({TOKEN_IDENTIFIER, lexeme, line, column});
                     }
                     i--;  // Adjust for the loop's increment
-                }
-                    // Handle numbers
-                else if (isdigit(input[i])) {
+                } else if (isdigit(input[i])) {
                     size_t start = i;
-                    while (i < input.size() && isdigit(input[i])) i++;
-                    // Handle floating point numbers
+                    while (i < input.size() && isdigit(input[i])) {
+                        i++;
+                        column++;
+                    }
                     if (i < input.size() && input[i] == '.' && isdigit(input[i+1])) {
                         i++;
-                        while (i < input.size() && isdigit(input[i])) i++;
+                        column++;
+                        while (i < input.size() && isdigit(input[i])) {
+                            i++;
+                            column++;
+                        }
                     }
                     std::string num = input.substr(start, i - start);
-                    tokens.push_back({TOKEN_NUMBER, num});
+                    tokens.push_back({TOKEN_NUMBER, num, line, column});
                     i--;  // Adjust for the loop's increment
-                }
-                    // Invalid tokens
-                else {
-                    tokens.push_back({TOKEN_INVALID, std::string(1, input[i])});
+                } else {
+                    tokens.push_back({TOKEN_INVALID, std::string(1, input[i]), line, column});
                 }
                 break;
         }
     }
-    tokens.push_back({TOKEN_EOF, ""});
+    tokens.push_back({TOKEN_EOF, "", line, column});
     return tokens;
 }
 
