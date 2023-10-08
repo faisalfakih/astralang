@@ -87,7 +87,13 @@ enum TokenType {
     TOKEN_AS, // 'as'
     TOKEN_EXTENDS, // 'extends'
     TOKEN_CONSTRUCTOR, // 'constructor'
-    TOKEN_DESTRUCTOR // 'destructor'
+    TOKEN_DESTRUCTOR, // 'destructor'
+    TOKEN_MATH, // 'math'
+    TOKEN_MATH_PI, // 'pi'
+    TOKEN_MATH_SQRT, // 'sqrt'
+    TOKEN_MATH_SIN, // 'sin'
+    TOKEN_MATH_COS, // 'cos'
+    TOKEN_MATH_TAN, // 'tan'
 };
 
 // Keyword List
@@ -134,7 +140,13 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"as", TOKEN_AS},
         {"extends", TOKEN_EXTENDS},
         {"constructor", TOKEN_CONSTRUCTOR},
-        {"destructor", TOKEN_DESTRUCTOR}
+        {"destructor", TOKEN_DESTRUCTOR},
+        {"Math", TOKEN_MATH},
+        {"pi", TOKEN_MATH_PI},
+        {"sqrt", TOKEN_MATH_SQRT},
+        {"sin", TOKEN_MATH_SIN},
+        {"cos", TOKEN_MATH_COS},
+        {"tan", TOKEN_MATH_TAN}
 };
 
 
