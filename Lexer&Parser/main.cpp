@@ -2,6 +2,7 @@
 #include <memory>
 #include <variant>
 #include <vector>
+#include <map>
 
 namespace AstraLang {
     class ASTNode {
@@ -146,6 +147,32 @@ namespace AstraLang {
     // Declarations
     class Declaration : public ASTNode {};
 
+    // Scope
+    class Scope {
+    public:
+        Scope(Scope* parent = nullptr) : parentScope(parent) {}
+
+        void addSymbol(const std::string& name, std::unique_ptr<Declaration> decl) {
+            symbols[name] = std::move(decl);
+        }
+
+        Declaration* getSymbol(const std::string& name) {
+            if (symbols.find(name) != symbols.end()) {
+                return symbols[name].get();
+            }
+            // If not in the current scope, check in the parent scope.
+            if (parentScope) {
+                return parentScope->getSymbol(name);
+            }
+            return nullptr;  // Not found in any scope.
+        }
+
+    private:
+        std::map<std::string, std::unique_ptr<Declaration>> symbols;
+        Scope* parentScope;
+    };
+
+
     // Declarations
     class VariableDeclaration : public Declaration {
     public:
@@ -160,10 +187,12 @@ namespace AstraLang {
     class FunctionDeclaration : public Declaration {
     public:
         FunctionDeclaration(std::string name, std::vector<std::unique_ptr<Parameter>> params, std::unique_ptr<TypeRepresentation> returnType = nullptr)
-                : name(std::move(name)), params(std::move(params)), returnType(std::move(returnType)) {}
+                : name(std::move(name)), params(std::move(params)), returnType(std::move(returnType)), functionScope(new Scope()) {}
+
         std::string name;
         std::vector<std::unique_ptr<Parameter>> params;
         std::unique_ptr<TypeRepresentation> returnType;
+        std::unique_ptr<Scope> functionScope;
     };
 
     class ClassDeclaration : public Declaration {
@@ -171,24 +200,26 @@ namespace AstraLang {
         ClassDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
                          std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
                          : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
-                            protectedMembers(std::move(protectedMembers)), methods(std::move(methods)) {}
+                            protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
         std::string name;
         std::vector<std::unique_ptr<MemberVariable>> privateMembers;
         std::vector<std::unique_ptr<MemberVariable>> publicMembers;
         std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
         std::vector<std::unique_ptr<FunctionDeclaration>> methods;
+        std::unique_ptr<Scope> classScope;
     };
     class StructDeclaration : public Declaration {
     public:
         StructDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
-                         std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
+                          std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
                 : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
-                  protectedMembers(std::move(protectedMembers)), methods(std::move(methods)) {}
+                  protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
         std::string name;
         std::vector<std::unique_ptr<MemberVariable>> privateMembers;
         std::vector<std::unique_ptr<MemberVariable>> publicMembers;
         std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
         std::vector<std::unique_ptr<FunctionDeclaration>> methods;
+        std::unique_ptr<Scope> classScope;
     };
 
     // Base class for statements
@@ -196,8 +227,11 @@ namespace AstraLang {
 
     class BlockStatement : public Statement {
     public:
-        explicit BlockStatement(std::vector<std::unique_ptr<Statement>> statements) : statements(std::move(statements)) {}
+        explicit BlockStatement(std::vector<std::unique_ptr<Statement>> statements)
+                : statements(std::move(statements)), blockScope(new Scope()) {}
+
         std::vector<std::unique_ptr<Statement>> statements;
+        std::unique_ptr<Scope> blockScope;
     };
 
     // Expression Statement
@@ -212,19 +246,21 @@ namespace AstraLang {
     class IfStatement : public Statement {
     public:
         IfStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> trueBranch, std::unique_ptr<Statement> falseBranch = {})
-                : condition(std::move(condition)), trueBranch(std::move(trueBranch)), falseBranch(std::move(falseBranch)) {}
+                : condition(std::move(condition)), trueBranch(std::move(trueBranch)), falseBranch(std::move(falseBranch)), ifScope(std::make_unique<Scope>()) {}
         std::unique_ptr<Expression> condition;
         std::unique_ptr<Statement> trueBranch;
         std::unique_ptr<Statement> falseBranch;
+        std::unique_ptr<Scope> ifScope;
     };
 
     // While Statement
     class WhileStatement : public Statement {
     public:
         WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
-                : condition(std::move(condition)), body(std::move(body)) {}
+                : condition(std::move(condition)), body(std::move(body)), whileScope(std::make_unique<Scope>()) {}
         std::unique_ptr<Expression> condition;
         std::unique_ptr<Statement> body;
+        std::unique_ptr<Scope> whileScope;
     };
 
     // For Statement
@@ -232,11 +268,13 @@ namespace AstraLang {
     public:
         ForStatement(std::unique_ptr<Statement> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
                      std::unique_ptr<Statement> body)
-                : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)) {}
+                : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)),
+                  forScope(std::make_unique<Scope>()) {}
         std::unique_ptr<Statement> initializer;
         std::unique_ptr<Expression> condition;
         std::unique_ptr<Expression> increment;
         std::unique_ptr<Statement> body;
+        std::unique_ptr<Scope> forScope;
     };
 
     // Return Statement
@@ -251,6 +289,4 @@ namespace AstraLang {
     // Break & Continue Statements
     class BreakStatement : public Statement {};
     class ContinueStatement : public Statement {};
-
-    
 }

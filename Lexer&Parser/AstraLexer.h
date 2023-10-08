@@ -96,7 +96,10 @@ enum TokenType {
     TOKEN_MATH_COS, // 'cos'
     TOKEN_MATH_TAN, // 'tan'
     TOKEN_MATH_POWER, // 'pow'
-    TOKEN_ENUM // 'enum'
+    TOKEN_ENUM, // 'enum'
+    TOKEN_STATIC, // 'static'
+    TOKEN_VIRTUAL, // 'virtual'
+    TOKEN_VOLATILE // 'volatile'
 };
 
 // Keyword List
@@ -151,7 +154,10 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"cos", TOKEN_MATH_COS},
         {"tan", TOKEN_MATH_TAN},
         {"pow", TOKEN_MATH_POWER},
-        {"enum", TOKEN_ENUM}
+        {"enum", TOKEN_ENUM},
+        {"static", TOKEN_STATIC},
+        {"virtual", TOKEN_VIRTUAL},
+        {"volatile", TOKEN_VOLATILE}
 };
 
 
