@@ -91,7 +91,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "Lexer&Parser/AstraParser.cpp",
+			"path" : "Lexer&Parser/main.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

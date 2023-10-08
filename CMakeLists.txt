@@ -4,4 +4,4 @@ project(AstraLang)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(AstraLang
-        Lexer&Parser/AstraParser.cpp)
+        Lexer&Parser/main.cpp)

@@ -18,6 +18,7 @@ enum TokenType {
     TOKEN_PLUS,     // '+'
     TOKEN_MINUS,    // '-'
     TOKEN_ASTERISK, // '*'
+    TOKEN_MODULO,   // '%'
     TOKEN_SLASH,    // '/'
     TOKEN_LPAREN,   // '('
     TOKEN_RPAREN,   // ')'
@@ -94,6 +95,8 @@ enum TokenType {
     TOKEN_MATH_SIN, // 'sin'
     TOKEN_MATH_COS, // 'cos'
     TOKEN_MATH_TAN, // 'tan'
+    TOKEN_MATH_POWER, // 'pow'
+    TOKEN_ENUM // 'enum'
 };
 
 // Keyword List
@@ -146,7 +149,9 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"sqrt", TOKEN_MATH_SQRT},
         {"sin", TOKEN_MATH_SIN},
         {"cos", TOKEN_MATH_COS},
-        {"tan", TOKEN_MATH_TAN}
+        {"tan", TOKEN_MATH_TAN},
+        {"pow", TOKEN_MATH_POWER},
+        {"enum", TOKEN_ENUM}
 };
 
 
@@ -249,6 +254,10 @@ std::vector<Token> Lexer(const std::string& input) {
                     tokens.push_back({TOKEN_MINUS, "-", line, column});
                     column++;
                 }
+                break;
+            case '%':
+                tokens.push_back({TOKEN_MODULO, "%", line, column});
+                column++;
                 break;
             case '*':
                 tokens.push_back({TOKEN_ASTERISK, "*", line, column});
