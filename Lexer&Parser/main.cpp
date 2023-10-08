@@ -10,6 +10,7 @@ namespace AstraLang {
         virtual ~ASTNode() = default;
     };
 
+    // Importing Libraries
     class Import : public ASTNode {
     public:
         explicit Import(std::string modulePath)
@@ -438,5 +439,126 @@ namespace AstraLang {
 
         std::unique_ptr<Expression> expr;
         std::unique_ptr<TypeRepresentation> type;
+    };
+
+    // Parser
+    class Parser {
+    private:
+        std::vector<Token> tokens;
+        int currentTokenIndex = 0;
+
+        Token& currentToken() {
+            return tokens[currentTokenIndex];
+        }
+
+        Token& nextToken() {
+            return tokens[++currentTokenIndex];
+        }
+
+        Token& peek(int distance = 0) {
+            return tokens[currentTokenIndex + distance];
+        }
+
+        void consumeToken() {
+            if (!isAtEnd()) {
+                currentTokenIndex++;
+            }
+        }
+
+        bool isAtEnd() const {
+            return currentTokenIndex >= tokens.size();
+        }
+
+        bool match(TokenType type) {
+            if (currentToken().type == type) {
+                nextToken();
+                return true;
+            }
+            return false;
+        }
+
+        void expect(TokenType type) {
+            if (currentToken().type != type) {
+                throw std::runtime_error("Unexpected token: " + currentToken().lexeme);
+            }
+            nextToken();
+        }
+
+        // Parse Expressions
+        std::unique_ptr<Expression> parseExpression() {
+            return parseBinaryExpression();
+        }
+        std::unique_ptr<Expression> parseBinaryExpression() {
+            return parseAdditionSubtraction();
+        }
+
+        std::unique_ptr<Expression> parseAdditionSubtraction() {
+            auto left = parseMultiplicationDivision();
+            while (match(TokenType::TOKEN_PLUS) || match(TokenType::TOKEN_MINUS)) {
+                TokenType op = currentToken().type;
+                consumeToken();
+                auto right = parseMultiplicationDivision();
+                left = std::make_unique<BinaryExpression>(BinaryExpression::Operator(op), std::move(left), std::move(right));
+            }
+            return left;
+        }
+
+        std::unique_ptr<Expression> parseMultiplicationDivision() {
+            auto left = parseUnaryExpression();
+            while (match(TokenType::TOKEN_ASTERISK) || match(TokenType::TOKEN_SLASH) || match(TokenType::TOKEN_PERCENT)) {
+                TokenType op = currentToken().type;
+                consumeToken();
+                auto right = parseUnaryExpression();
+                left = std::make_unique<BinaryExpression>(BinaryExpression::Operator(op), std::move(left), std::move(right));
+            }
+            return left;
+        }
+
+
+        std::unique_ptr<Expression> parseUnaryExpression() {
+            if (match(TokenType::TOKEN_EXCLAMATION)) {
+                auto operand = parsePrimaryExpression();
+                return std::make_unique<UnaryExpression>(UnaryExpression::Operator::NOT, std::move(operand));
+            }
+            if (match(TokenType::TOKEN_AMPERSAND)) {
+                auto operand = parsePrimaryExpression();
+                return std::make_unique<UnaryExpression>(UnaryExpression::Operator::REFERENCE, std::move(operand));
+            }
+            if (match(TokenType::TOKEN_ASTERISK)) {
+                auto operand = parsePrimaryExpression();
+                return std::make_unique<UnaryExpression>(UnaryExpression::Operator::DEREFERENCE, std::move(operand));
+            }
+            // If it's not a unary operator, parse as primary expression (e.g., literals, identifiers, etc.)
+            return parsePrimaryExpression();
+        }
+
+        std::unique_ptr<Expression> parsePrimaryExpression() {
+            if (match(TokenType::TOKEN_NUMBER)) {
+                return std::make_unique<NumberLiteral>(std::stod(currentToken().lexeme));
+            }
+            if (match(TokenType::TOKEN_CHAR_LITERAL)) {
+                if (currentToken().lexeme.length() == 1) {
+                    return std::make_unique<CharLiteral>(currentToken().lexeme[0]);
+                } else {
+                    throw std::runtime_error("Expected expression at line " + std::to_string(currentToken().line) + ", column " + std::to_string(currentToken().column));
+                }
+            }
+            if (match(TokenType::TOKEN_STRING_LITERAL)) {
+                return std::make_unique<StringLiteral>(currentToken().lexeme);
+            }
+            if (match(TokenType::TOKEN_TRUE) || match(TokenType::TOKEN_FALSE)) {
+                bool value = currentToken().type == TokenType::TOKEN_TRUE;
+                return std::make_unique<BooleanLiteral>(value);
+            }
+            if (match(TokenType::TOKEN_IDENTIFIER)) {
+                return std::make_unique<Identifier>(currentToken().lexeme);
+            }
+            if (match(TokenType::TOKEN_LPAREN)) {
+                auto expr = parseExpression();
+                expect(TokenType::TOKEN_RPAREN);
+                return expr;
+            }
+            throw std::runtime_error("Expected expression at line " + std::to_string(currentToken().line) + ", column " + std::to_string(currentToken().column));
+        }
     };
 }

@@ -18,7 +18,7 @@ enum TokenType {
     TOKEN_PLUS,     // '+'
     TOKEN_MINUS,    // '-'
     TOKEN_ASTERISK, // '*'
-    TOKEN_MODULO,   // '%'
+    TOKEN_PERCENT,   // '%'
     TOKEN_SLASH,    // '/'
     TOKEN_LPAREN,   // '('
     TOKEN_RPAREN,   // ')'
@@ -54,7 +54,7 @@ enum TokenType {
     TOKEN_THROW, // 'throw'
     TOKEN_PRINT, // 'print'
     TOKEN_READ, // 'read'
-    TOKEN_EXCLAMATION_MARK, // '!'
+    TOKEN_EXCLAMATION, // '!'
     TOKEN_AMPERSAND, // '&'
     TOKEN_EQUAL_EQUAL,   // '=='
     TOKEN_TRIPLE_EQUAL,   // '==='
@@ -264,7 +264,7 @@ std::vector<Token> Lexer(const std::string& input) {
                 }
                 break;
             case '%':
-                tokens.push_back({TOKEN_MODULO, "%", line, column});
+                tokens.push_back({TOKEN_PERCENT, "%", line, column});
                 column++;
                 break;
             case '*':
@@ -337,7 +337,7 @@ std::vector<Token> Lexer(const std::string& input) {
                     i++;
                     column += 2;
                 } else {
-                    tokens.push_back({TOKEN_EXCLAMATION_MARK, "!", line, column});
+                    tokens.push_back({TOKEN_EXCLAMATION, "!", line, column});
                     column++;
                 }
                 break;
