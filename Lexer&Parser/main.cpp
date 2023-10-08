@@ -190,4 +190,67 @@ namespace AstraLang {
         std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
         std::vector<std::unique_ptr<FunctionDeclaration>> methods;
     };
+
+    // Base class for statements
+    class Statement : public ASTNode {};
+
+    class BlockStatement : public Statement {
+    public:
+        explicit BlockStatement(std::vector<std::unique_ptr<Statement>> statements) : statements(std::move(statements)) {}
+        std::vector<std::unique_ptr<Statement>> statements;
+    };
+
+    // Expression Statement
+    class ExpressionStatement : public Statement {
+    public:
+        explicit ExpressionStatement(std::unique_ptr<Expression> expr) : expr(std::move(expr)) {}
+
+        std::unique_ptr<Expression> expr;
+    };
+
+    // If Statement
+    class IfStatement : public Statement {
+    public:
+        IfStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> trueBranch, std::unique_ptr<Statement> falseBranch = {})
+                : condition(std::move(condition)), trueBranch(std::move(trueBranch)), falseBranch(std::move(falseBranch)) {}
+        std::unique_ptr<Expression> condition;
+        std::unique_ptr<Statement> trueBranch;
+        std::unique_ptr<Statement> falseBranch;
+    };
+
+    // While Statement
+    class WhileStatement : public Statement {
+    public:
+        WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
+                : condition(std::move(condition)), body(std::move(body)) {}
+        std::unique_ptr<Expression> condition;
+        std::unique_ptr<Statement> body;
+    };
+
+    // For Statement
+    class ForStatement : public Statement {
+    public:
+        ForStatement(std::unique_ptr<Statement> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
+                     std::unique_ptr<Statement> body)
+                : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)) {}
+        std::unique_ptr<Statement> initializer;
+        std::unique_ptr<Expression> condition;
+        std::unique_ptr<Expression> increment;
+        std::unique_ptr<Statement> body;
+    };
+
+    // Return Statement
+    class ReturnStatement : public Statement {
+    public:
+        explicit ReturnStatement(std::unique_ptr<Expression> returnValue)
+                : returnValue(std::move(returnValue)) {}
+
+        std::unique_ptr<Expression> returnValue;
+    };
+
+    // Break & Continue Statements
+    class BreakStatement : public Statement {};
+    class ContinueStatement : public Statement {};
+
+    
 }
