@@ -100,7 +100,8 @@ enum TokenType {
     TOKEN_STATIC, // 'static'
     TOKEN_VIRTUAL, // 'virtual'
     TOKEN_OVERRIDE, // 'override'
-    TOKEN_ABSTRACT // 'abstract'
+    TOKEN_ABSTRACT, // 'abstract'
+    TOKEN_NEWLINE // '\n'
 };
 
 // Keyword List
@@ -185,6 +186,7 @@ std::vector<Token> Lexer(const std::string& input) {
                 column++;
                 break;
             case '\n':
+                tokens.push_back({TOKEN_NEWLINE, "\n", line, column});
                 line++;
                 column = 1;
                 break;

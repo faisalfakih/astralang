@@ -172,6 +172,14 @@ namespace AstraLang {
     public:
         Scope(Scope* parent = nullptr) : parentScope(parent) {}
 
+        Scope* createChildScope() {
+            return new Scope(this);
+        }
+
+        Scope* getParentScope() const {
+            return parentScope;
+        }
+
         void addSymbol(const std::string& name, std::unique_ptr<Declaration> decl) {
             symbols[name] = std::move(decl);
         }
@@ -308,20 +316,20 @@ namespace AstraLang {
         std::unique_ptr<Scope> ifScope;
     };
 
-    // While Statement
-    class WhileStatement : public Statement {
+    // While Loop
+    class WhileLoop : public Statement {
     public:
-        WhileStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
+        WhileLoop(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> body)
                 : condition(std::move(condition)), body(std::move(body)), whileScope(std::make_unique<Scope>()) {}
         std::unique_ptr<Expression> condition;
         std::unique_ptr<Statement> body;
         std::unique_ptr<Scope> whileScope;
     };
 
-    // For Statement
-    class ForStatement : public Statement {
+    // For Loop
+    class ForLoop : public Statement {
     public:
-        ForStatement(std::unique_ptr<Statement> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
+        ForLoop(std::unique_ptr<Statement> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
                      std::unique_ptr<Statement> body)
                 : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)),
                   forScope(std::make_unique<Scope>()) {}
@@ -444,6 +452,8 @@ namespace AstraLang {
     // Parser
     class Parser {
     private:
+        Scope* currentScope;
+
         std::vector<Token> tokens;
         int currentTokenIndex = 0;
 
@@ -484,6 +494,11 @@ namespace AstraLang {
             nextToken();
         }
 
+        bool check(TokenType type) {
+            return peek().type == type;
+        }
+
+
         // Parse Expressions
         std::unique_ptr<Expression> parseExpression() {
             return parseBinaryExpression();
@@ -494,7 +509,7 @@ namespace AstraLang {
 
         std::unique_ptr<Expression> parseAdditionSubtraction() {
             auto left = parseMultiplicationDivision();
-            while (match(TokenType::TOKEN_PLUS) || match(TokenType::TOKEN_MINUS)) {
+            while (check(TokenType::TOKEN_PLUS) || check(TokenType::TOKEN_MINUS)) {
                 TokenType op = currentToken().type;
                 consumeToken();
                 auto right = parseMultiplicationDivision();
@@ -505,7 +520,7 @@ namespace AstraLang {
 
         std::unique_ptr<Expression> parseMultiplicationDivision() {
             auto left = parseUnaryExpression();
-            while (match(TokenType::TOKEN_ASTERISK) || match(TokenType::TOKEN_SLASH) || match(TokenType::TOKEN_PERCENT)) {
+            while (check(TokenType::TOKEN_ASTERISK) || check(TokenType::TOKEN_SLASH) || match(TokenType::TOKEN_PERCENT)) {
                 TokenType op = currentToken().type;
                 consumeToken();
                 auto right = parseUnaryExpression();
@@ -559,6 +574,125 @@ namespace AstraLang {
                 return expr;
             }
             throw std::runtime_error("Expected expression at line " + std::to_string(currentToken().line) + ", column " + std::to_string(currentToken().column));
+        }
+
+        // Parse Statement
+        std::unique_ptr<Statement> parseStatement() {
+            if (match(TokenType::TOKEN_IF)) {
+                // TODO: Add other statement types
+                if (match(TokenType::TOKEN_IF)) {
+                    return parseIfStatement();
+                } else if (match(TokenType::TOKEN_WHILE)) {
+                    return parseWhileLoop();
+                }
+            } else {
+                throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column));
+            }
+        }
+
+        std::unique_ptr<Statement> parseBlockStatement() {
+            std::vector<std::unique_ptr<Statement>> statements;
+
+            expect(TokenType::TOKEN_LBRACE);
+
+            while (!check(TokenType::TOKEN_RBRACE) && !check(TokenType::TOKEN_EOF)) {
+                statements.push_back(parseStatement());
+                expect(TokenType::TOKEN_SEMI_COLON);
+            }
+
+            consumeToken();  // Consume the closing brace TOKEN_RBRACE
+            return std::make_unique<BlockStatement>(std::move(statements));
+            // Assuming you have a BlockStatement class that takes a vector of Statements as its constructor.
+        }
+
+
+        // If Statements
+        std::unique_ptr<Statement> parseIfStatement() {
+            expect(TokenType::TOKEN_IF); // Check for the 'if' keyword
+            expect(TokenType::TOKEN_LPAREN); // Then check for an open bracket '('
+
+            std::unique_ptr<Expression> condition = parseExpression(); // Parse the condition
+            expect(TokenType::TOKEN_RPAREN); // Check for a closing bracket ')' after the condition
+
+            std::unique_ptr<Statement> trueBranch;
+            if (match((TokenType::TOKEN_LBRACE))) { // Check for an open curly brace '{'
+                trueBranch = parseBlockStatement(); // Parse the true branch
+            } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
+                consumeToken(); // Consume newline if it's there
+                trueBranch = parseStatement(); // Parse a single statement
+            } else {
+                throw std::runtime_error("Expected '{' or newline after if condition at line " + std::to_string(currentToken().line));
+            }
+
+            std::unique_ptr<Statement> falseBranch = nullptr; // the else branch, initialized to null
+            if (match(TokenType::TOKEN_ELSE)) { // If there is an else branch
+                if (match(TokenType::TOKEN_IF)) { // If there's an 'else if'
+                    falseBranch = parseIfStatement();
+                } else if (match(TokenType::TOKEN_LBRACE)) { // If next token is '{'
+                    falseBranch = parseBlockStatement(); // Parse a block of statements
+                } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
+                    consumeToken(); // Consume newline if it's there
+                    falseBranch = parseStatement(); // Parse a single statement
+                } else {
+                    throw std::runtime_error("Expected '{' or newline after else at line " + std::to_string(currentToken().line));
+                }
+            }
+
+            return std::make_unique<IfStatement>(std::move(condition), std::move(trueBranch), std::move(falseBranch));
+        }
+
+        // While Loop
+        std::unique_ptr<Statement> parseWhileLoop() {
+            expect(TokenType::TOKEN_WHILE);
+            expect(TokenType::TOKEN_LPAREN);
+
+            std::unique_ptr<Expression> condition = parseExpression();
+            expect(TokenType::TOKEN_RPAREN);
+
+            std::unique_ptr<Statement> body;
+            if (match(TokenType::TOKEN_LBRACE)) {
+                body = parseBlockStatement();
+            } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
+                consumeToken();  // consume newline if it's there
+                body = parseStatement();
+            } else {
+                throw std::runtime_error("Expected '{', newline, or start of statement after while condition at line " + std::to_string(currentToken().line));
+            }
+
+            return std::make_unique<WhileLoop>(std::move(condition), std::move(body));
+        }
+
+
+
+        bool isStartOfStatement(const Token& token) {
+            switch(token.type) {
+                case TOKEN_IF:         // if statement
+                case TOKEN_WHILE:      // while loop
+                case TOKEN_FOR:        // for loop
+                case TOKEN_RETURN:     // return statement
+                case TOKEN_BREAK:      // break statement
+                case TOKEN_CONTINUE:   // continue statement
+                case TOKEN_PRINT:      // print statement
+                case TOKEN_IDENTIFIER: // variable assignment, function call, etc.
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+    public:
+        Parser() : currentScope(new Scope()) {} // Start with a global scope
+
+        void enterNewScope() {
+            currentScope = currentScope->createChildScope();
+        }
+
+        void exitCurrentScope() {
+            Scope* parent = currentScope->getParentScope();
+            if (parent) { // Ensure we aren't at global scope
+                delete currentScope; // Free up the current scope
+                currentScope = parent;
+            }
         }
     };
 }
