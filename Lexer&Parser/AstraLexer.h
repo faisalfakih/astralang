@@ -2,6 +2,8 @@
 // Created by Faisal Fakih on 07/10/2023.
 //
 
+// TODO: Fix Column Numbering
+
 #ifndef ASTRALANG_ASTRALEXER_H
 #define ASTRALANG_ASTRALEXER_H
 #include <string>
@@ -64,7 +66,7 @@ enum TokenType {
     TOKEN_AND_AND,       // '&&'
     TOKEN_OR_OR,          // '||'
     TOKEN_CHAR_LITERAL, // 'a'
-    TOKEN_STRING, // "hello world"
+    TOKEN_STRING_LITERAL, // "hello world"
     TOKEN_VECTOR, // 'vector';
     TOKEN_MAP, // 'map';
     TOKEN_UNORDERED_MAP, // 'unordered_map';
@@ -73,7 +75,16 @@ enum TokenType {
     TOKEN_COLON, // ':'
     TOKEN_THIS, // 'this'
     TOKEN_LSQUARE, // '['
-    TOKEN_RSQUARE // ']'
+    TOKEN_RSQUARE, // ']'
+    TOKEN_NEW, // 'new'
+    TOKEN_DELETE, // 'delete'
+    TOKEN_NULL, // 'null'
+    TOKEN_DOT, // '.'
+    TOKEN_PUBLIC, // 'public'
+    TOKEN_PRIVATE, // 'private'
+    TOKEN_PROTECTED, // 'protected'
+    TOKEN_USING, // 'using'
+    TOKEN_AS, // 'as'
 };
 
 // Keyword List
@@ -109,12 +120,19 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"unordered_map", TOKEN_UNORDERED_MAP},
         {"struct", TOKEN_STRUCT},
         {"class", TOKEN_CLASS},
-        {"this", TOKEN_THIS}
+        {"this", TOKEN_THIS},
+        {"new", TOKEN_NEW},
+        {"delete", TOKEN_DELETE},
+        {"null", TOKEN_NULL},
+        {"public", TOKEN_PUBLIC},
+        {"private", TOKEN_PRIVATE},
+        {"protected", TOKEN_PROTECTED},
+        {"using", TOKEN_USING},
+        {"as", TOKEN_AS}
 };
 
 
 // Struct to represent a single token with its type and actual string representation (lexeme)
-
 struct Token {
     TokenType type;
     std::string lexeme;
@@ -125,87 +143,99 @@ struct Token {
 std::vector<Token> Lexer(const std::string& input) {
     std::vector<Token> tokens;
     size_t line = 1;
-    size_t column = 0;
-
+    size_t column = 1;
     for (size_t i = 0; i < input.size(); i++) {
+        size_t startColumn = column;
         column++;
-        switch (input[i]) {
+        char ch = input[i];
+        switch (ch) {
             case ' ':
             case '\t':
+                column++;
                 break;
             case '\n':
                 line++;
-                column = 0;
+                column = 1;
                 break;
             case '\r':
                 break;
-            case '"':
-            {
+            case '.':
+                tokens.push_back({TOKEN_DOT, ".", line, column});
+                column++;
+                break;
+            case '"': {
                 size_t start = i + 1;
                 i++;
+                column++;
                 while (i < input.size() && input[i] != '"') {
-                    column++;
                     if (input[i] == '\n') {
                         line++;
-                        column = 0;
+                        column = 1;
                     }
                     i++;
                 }
                 if (i == input.size()) {
-                    tokens.push_back({TOKEN_INVALID, "UNTERMINATED_STRING", line, column});
+                    tokens.push_back({TOKEN_INVALID, "UNTERMINATED_STRING", line, startColumn});
                 } else {
                     std::string strValue = input.substr(start, i - start);
-                    tokens.push_back({TOKEN_STRING, strValue, line, column});
+                    tokens.push_back({TOKEN_STRING_LITERAL, strValue, line, startColumn});
+                    column += strValue.length() + 1; // +1 accounts for the ending quote
                 }
-            }
                 break;
-            case '\'':
-            {
+            }
+            case '\'': {
                 size_t start = i + 1;
                 i++;
+                column++;
                 while (i < input.size() && input[i] != '\'') {
                     column++;
                     if (input[i] == '\n') {
                         line++;
-                        column = 0;
+                        column = 1;
                     }
                     i++;
                 }
-                if (i == input.size() || i - start > 1) { // character literals should only be one character long
+                if (i == input.size() || i - start > 1) {
                     tokens.push_back({TOKEN_INVALID, "INVALID_CHARACTER_LITERAL", line, column});
                 } else {
                     std::string charValue = input.substr(start, i - start);
                     tokens.push_back({TOKEN_CHAR_LITERAL, charValue, line, column});
+                    column++;
                 }
-            }
                 break;
-
+            }
             case '=':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
                     tokens.push_back({TOKEN_EQUAL_EQUAL, "==", line, column});
                     i++;
+                    column += 2;
                 } else {
                     tokens.push_back({TOKEN_EQUAL, "=", line, column});
+                    column++;
                 }
                 break;
             case '+':
                 tokens.push_back({TOKEN_PLUS, "+", line, column});
+                column++;
                 break;
             case '-':
                 if (i + 1 < input.size() && input[i + 1] == '>') {
                     tokens.push_back({TOKEN_ARROW, "->", line, column});
                     i++;
+                    column += 2;
                 } else {
                     tokens.push_back({TOKEN_MINUS, "-", line, column});
+                    column++;
                 }
                 break;
             case '*':
                 tokens.push_back({TOKEN_ASTERISK, "*", line, column});
+                column++;
                 break;
             case '/':
                 if (i + 1 < input.size() && input[i + 1] == '/') {
-                    i++; // Move to the next character after '//'
-                    column++;
+                    i++;
+                    column += 2;
                     while (i < input.size() && input[i] != '\n') {
                         i++;
                         column++;
@@ -216,98 +246,121 @@ std::vector<Token> Lexer(const std::string& input) {
                     while (i < input.size() && !(input[i] == '*' && i + 1 < input.size() && input[i + 1] == '/')) {
                         if (input[i] == '\n') {
                             line++;
-                            column = 0;
+                            column = 1;
                         }
                         i++;
                         column++;
                     }
                     if (i < input.size()) {
-                        i++;  // skip the closing '/'
+                        i++;
+                        column++;
                     }
                 } else {
                     tokens.push_back({TOKEN_SLASH, "/", line, column});
+                    column++;
                 }
                 break;
             case '(':
                 tokens.push_back({TOKEN_LPAREN, "(", line, column});
+                column++;
                 break;
             case ')':
                 tokens.push_back({TOKEN_RPAREN, ")", line, column});
+                column++;
                 break;
             case ';':
                 tokens.push_back({TOKEN_SEMI_COLON, ";", line, column});
+                column++;
                 break;
             case '{':
                 tokens.push_back({TOKEN_LBRACE, "{", line, column});
+                column++;
                 break;
             case '}':
                 tokens.push_back({TOKEN_RBRACE, "}", line, column});
+                column++;
                 break;
             case ',':
                 tokens.push_back({TOKEN_COMMA, ",", line, column});
+                column++;
                 break;
             case ':':
                 tokens.push_back({TOKEN_COLON, ":", line, column});
+                column++;
                 break;
             case '!':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
                     tokens.push_back({TOKEN_NOT_EQUAL, "!=", line, column});
                     i++;
+                    column += 2;
                 } else {
                     tokens.push_back({TOKEN_EXCLAMATION_MARK, "!", line, column});
+                    column++;
                 }
                 break;
             case '>':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
                     tokens.push_back({TOKEN_GREATER_EQUAL, ">=", line, column});
                     i++;
+                    column += 2;
                 } else {
                     tokens.push_back({TOKEN_GREATER, ">", line, column});
+                    column++;
                 }
                 break;
             case '<':
                 if (i + 1 < input.size() && input[i + 1] == '=') {
                     tokens.push_back({TOKEN_LESS_EQUAL, "<=", line, column});
                     i++;
+                    column += 2;
                 } else {
                     tokens.push_back({TOKEN_LESS, "<", line, column});
+                    column++;
                 }
                 break;
             case '&':
                 if (i + 1 < input.size() && input[i + 1] == '&') {
                     tokens.push_back({TOKEN_AND_AND, "&&", line, column});
                     i++;
+                    column += 2;
                 } else {
                     tokens.push_back({TOKEN_AMPERSAND, "&", line, column});
+                    column++;
                 }
                 break;
             case '|':
                 if (i + 1 < input.size() && input[i + 1] == '|') {
                     tokens.push_back({TOKEN_OR_OR, "||", line, column});
                     i++;
+                    column += 2;
+                } else {
+                    tokens.push_back({TOKEN_INVALID, "|", line, column});
+                    column++;
                 }
                 break;
             case '[':
                 tokens.push_back({TOKEN_LSQUARE, "[", line, column});
+                column++;
                 break;
             case ']':
                 tokens.push_back({TOKEN_RSQUARE, "]", line, column});
+                column++;
                 break;
             default:
                 if (isalpha(input[i]) || input[i] == '_') {
                     size_t start = i;
                     while (i < input.size() && (isalnum(input[i]) || input[i] == '_')) {
                         i++;
-                        column++;
                     }
                     std::string lexeme = input.substr(start, i - start);
                     auto it = keywordMap.find(lexeme);
                     if (it != keywordMap.end()) {
-                        tokens.push_back({it->second, lexeme, line, column});
+                        tokens.push_back({it->second, lexeme, line, startColumn});
                     } else {
-                        tokens.push_back({TOKEN_IDENTIFIER, lexeme, line, column});
+                        tokens.push_back({TOKEN_IDENTIFIER, lexeme, line, startColumn});
                     }
-                    i--;  // Adjust for the loop's increment
+                    column += lexeme.size() - 1;
+                    i--;
                 } else if (isdigit(input[i])) {
                     size_t start = i;
                     while (i < input.size() && isdigit(input[i])) {
@@ -323,10 +376,11 @@ std::vector<Token> Lexer(const std::string& input) {
                         }
                     }
                     std::string num = input.substr(start, i - start);
-                    tokens.push_back({TOKEN_NUMBER, num, line, column});
-                    i--;  // Adjust for the loop's increment
+                    tokens.push_back({TOKEN_NUMBER, num, line, startColumn});
+                    column += num.size() - 1;
+                    i--;
                 } else {
-                    tokens.push_back({TOKEN_INVALID, std::string(1, input[i]), line, column});
+                    tokens.push_back({TOKEN_INVALID, std::string(1, input[i]), line, startColumn});
                 }
                 break;
         }
@@ -334,5 +388,6 @@ std::vector<Token> Lexer(const std::string& input) {
     tokens.push_back({TOKEN_EOF, "", line, column});
     return tokens;
 }
+
 
 #endif //ASTRALANG_ASTRALEXER_H
