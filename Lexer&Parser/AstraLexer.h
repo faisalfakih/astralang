@@ -84,7 +84,7 @@ enum TokenType {
     TOKEN_PUBLIC, // 'public'
     TOKEN_PRIVATE, // 'private'
     TOKEN_PROTECTED, // 'protected'
-    TOKEN_USING, // 'using'
+    TOKEN_IMPORT, // 'import'
     TOKEN_AS, // 'as'
     TOKEN_EXTENDS, // 'extends'
     TOKEN_CONSTRUCTOR, // 'constructor'
@@ -99,7 +99,8 @@ enum TokenType {
     TOKEN_ENUM, // 'enum'
     TOKEN_STATIC, // 'static'
     TOKEN_VIRTUAL, // 'virtual'
-    TOKEN_VOLATILE // 'volatile'
+    TOKEN_OVERRIDE, // 'override'
+    TOKEN_ABSTRACT // 'abstract'
 };
 
 // Keyword List
@@ -142,7 +143,7 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"public", TOKEN_PUBLIC},
         {"private", TOKEN_PRIVATE},
         {"protected", TOKEN_PROTECTED},
-        {"using", TOKEN_USING},
+        {"import", TOKEN_IMPORT},
         {"as", TOKEN_AS},
         {"extends", TOKEN_EXTENDS},
         {"constructor", TOKEN_CONSTRUCTOR},
@@ -157,7 +158,8 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"enum", TOKEN_ENUM},
         {"static", TOKEN_STATIC},
         {"virtual", TOKEN_VIRTUAL},
-        {"volatile", TOKEN_VOLATILE}
+        {"override", TOKEN_OVERRIDE},
+        {"abstract", TOKEN_ABSTRACT}
 };
 
 

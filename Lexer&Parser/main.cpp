@@ -10,6 +10,14 @@ namespace AstraLang {
         virtual ~ASTNode() = default;
     };
 
+    class Import : public ASTNode {
+    public:
+        explicit Import(std::string modulePath)
+                : modulePath(std::move(modulePath)) {}
+
+        std::string modulePath;
+    };
+
     // Abstract class for all expressions
     class Expression : public ASTNode {};
 
@@ -31,6 +39,17 @@ namespace AstraLang {
         std::unique_ptr<Expression> left;
         std::unique_ptr<Expression> right;
     };
+
+    enum AssignmentOperator { ASSIGN_ADD, ASSIGN_SUB, ASSIGN_MUL, ASSIGN_DIV, ASSIGN_MOD }; // (+=, -=, *=, /=, %=)
+    class AssignmentExpression : public Expression {
+    public:
+        AssignmentExpression(AssignmentOperator op, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right)
+                : op(op), left(std::move(left)), right(std::move(right)) {}
+
+        AssignmentOperator op;
+        std::unique_ptr<Expression> left, right;
+    };
+
 
     // Represent literals
     class Literal : public Expression {};
@@ -172,19 +191,54 @@ namespace AstraLang {
         Scope* parentScope;
     };
 
+    // Modifiers & Qualifiers
+    class Modifier {
+    public:
+        enum class Type {
+            STATIC,
+            CONST,
+            VIRTUAL,
+            OVERRIDE,
+            ABSTRACT
+        };
+
+        explicit Modifier(Type mod) : type(mod) {}
+
+        Type getType() const {
+            return type;
+        }
+
+    private:
+        Type type;
+    };
+
+    // Modifiable Declaration
+    class ModifiableDeclaration : public Declaration {
+    public:
+        void addModifier(Modifier::Type mod) {
+            modifiers.push_back(mod);
+        }
+
+        bool hasModifier(Modifier::Type mod) const {
+            return std::find(modifiers.begin(), modifiers.end(), mod) != modifiers.end();
+        }
+
+    protected:
+        std::vector<Modifier::Type> modifiers;
+    };
+
 
     // Declarations
-    class VariableDeclaration : public Declaration {
+    class VariableDeclaration : public ModifiableDeclaration {
     public:
-        VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value)
+        VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr)
                 : type(std::move(type)), name(std::move(name)), value(std::move(value)) {}
-
         std::unique_ptr<TypeRepresentation> type;
         std::string name;
         std::unique_ptr<Expression> value;
     };
 
-    class FunctionDeclaration : public Declaration {
+    class FunctionDeclaration : public ModifiableDeclaration {
     public:
         FunctionDeclaration(std::string name, std::vector<std::unique_ptr<Parameter>> params, std::unique_ptr<TypeRepresentation> returnType = nullptr)
                 : name(std::move(name)), params(std::move(params)), returnType(std::move(returnType)), functionScope(new Scope()) {}
@@ -195,7 +249,7 @@ namespace AstraLang {
         std::unique_ptr<Scope> functionScope;
     };
 
-    class ClassDeclaration : public Declaration {
+    class ClassDeclaration : public ModifiableDeclaration {
     public:
         ClassDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
                          std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
@@ -208,7 +262,7 @@ namespace AstraLang {
         std::vector<std::unique_ptr<FunctionDeclaration>> methods;
         std::unique_ptr<Scope> classScope;
     };
-    class StructDeclaration : public Declaration {
+    class StructDeclaration : public ModifiableDeclaration {
     public:
         StructDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
                           std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
@@ -289,4 +343,100 @@ namespace AstraLang {
     // Break & Continue Statements
     class BreakStatement : public Statement {};
     class ContinueStatement : public Statement {};
+
+    // Represents a single 'catch' block
+    class CatchBlock : public Statement {
+    public:
+        CatchBlock(std::unique_ptr<TypeRepresentation> exceptionType, std::string exceptionName, std::unique_ptr<BlockStatement> block)
+                : exceptionType(std::move(exceptionType)), exceptionName(std::move(exceptionName)), block(std::move(block)) {}
+
+        std::unique_ptr<TypeRepresentation> exceptionType;
+        std::string exceptionName;
+        std::unique_ptr<BlockStatement> block;
+    };
+
+    // Try statement
+    class TryStatement : public Statement {
+    public:
+        TryStatement(std::unique_ptr<BlockStatement> tryBlock, std::vector<std::unique_ptr<CatchBlock>> catchBlocks, std::unique_ptr<BlockStatement> finallyBlock = nullptr)
+                : tryBlock(std::move(tryBlock)), catchBlocks(std::move(catchBlocks)), finallyBlock(std::move(finallyBlock)) {}
+
+        std::unique_ptr<BlockStatement> tryBlock;
+        std::vector<std::unique_ptr<CatchBlock>> catchBlocks;
+        std::unique_ptr<BlockStatement> finallyBlock;
+    };
+
+    // Finally statement
+    class FinallyStatement : public Statement {
+    public:
+        explicit FinallyStatement(std::unique_ptr<BlockStatement> finallyBlock)
+                : finallyBlock(std::move(finallyBlock)) {}
+
+        std::unique_ptr<BlockStatement> finallyBlock;
+    };
+
+    class UnaryExpression : public Expression {
+    public:
+        enum Operator {
+            NEGATION,   // For '-'
+            NOT,        // For '!'
+            DEREFERENCE, // For '*'
+            REFERENCE  // For '&'
+        };
+
+        UnaryExpression(Operator op, std::unique_ptr<Expression> operand)
+                : op(op), operand(std::move(operand)) {}
+
+        Operator op;
+        std::unique_ptr<Expression> operand;
+    };
+
+    // Ternary Expressions
+    class TernaryExpression : public Expression {
+    public:
+        TernaryExpression(std::unique_ptr<Expression> condition, std::unique_ptr<Expression> trueExpr, std::unique_ptr<Expression> falseExpr)
+                : condition(std::move(condition)), trueExpr(std::move(trueExpr)), falseExpr(std::move(falseExpr)) {}
+
+        std::unique_ptr<Expression> condition, trueExpr, falseExpr;
+    };
+
+    // Prefix expressions
+    class PostfixExpression : public Expression {
+    public:
+        enum Operator { INCREMENT, DECREMENT }; // ++ and --
+        PostfixExpression(Operator op, std::unique_ptr<Expression> operand)
+                : op(op), operand(std::move(operand)) {}
+
+        Operator op;
+        std::unique_ptr<Expression> operand;
+    };
+
+    class PrefixExpression : public Expression {
+    public:
+        enum Operator { INCREMENT, DECREMENT };  // ++ and --
+        PrefixExpression(Operator op, std::unique_ptr<Expression> operand)
+                : op(op), operand(std::move(operand)) {}
+
+        Operator op;
+        std::unique_ptr<Expression> operand;
+    };
+
+    // Type Casting
+    class TypeCastExpression : public Expression {
+    public:
+        TypeCastExpression(std::unique_ptr<TypeRepresentation> targetType, std::unique_ptr<Expression> expr)
+                : targetType(std::move(targetType)), expr(std::move(expr)) {}
+
+        std::unique_ptr<TypeRepresentation> targetType;
+        std::unique_ptr<Expression> expr;
+    };
+
+    class TypeCheckExpression : public Expression {
+    public:
+        TypeCheckExpression(std::unique_ptr<Expression> expr, std::unique_ptr<TypeRepresentation> type)
+                : expr(std::move(expr)), type(std::move(type)) {}
+
+        std::unique_ptr<Expression> expr;
+        std::unique_ptr<TypeRepresentation> type;
+    };
 }
