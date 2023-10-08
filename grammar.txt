@@ -3,22 +3,23 @@
 Multiline comments
 */
 
-fn main(const x) { // main function
-	return 1; // Return an error
-	return 2; // Return without an error
+fn main() {
+    int x = 5; // integer
+    short x = 10; // short integer
+    long x = 20; // long integer
+    float x = 5.5; // floating point number
+    double x = 5.5; // double floating point number
+    char x = 'x'; // character
+    string x = "Hello World"; // string
+    bool x = true; // boolean
+    int x[5] = {1, 2, 3, 4, 5}; // Array
 }
-print("Hello World!"); // Printing Hello World
 
-// Data Types
-let x: int = 10;
-let y: float = 10.0;
-let z: string = "Hello World!";
-let a: bool = true;
-let b: char = 'a';
-vector<int> x = {1, 2, 3, 4, 5, 6, 6, 7};
+// double equal
 
-print("Hello World");
-let x: string = "";
-let y: string = "";
-read(x, y);
-
+fn factorial(int n) -> long {
+    if (n === 0) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}

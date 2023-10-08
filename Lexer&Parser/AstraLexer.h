@@ -2,8 +2,6 @@
 // Created by Faisal Fakih on 07/10/2023.
 //
 
-// TODO: Fix Column Numbering
-
 #ifndef ASTRALANG_ASTRALEXER_H
 #define ASTRALANG_ASTRALEXER_H
 #include <string>
@@ -23,7 +21,7 @@ enum TokenType {
     TOKEN_SLASH,    // '/'
     TOKEN_LPAREN,   // '('
     TOKEN_RPAREN,   // ')'
-    TOKEN_LET, // 'let'
+    TOKEN_CONST, // 'const'
     TOKEN_INT_TYPE, // 'int'
     TOKEN_SHORT_TYPE, // 'short'
     TOKEN_LONG_TYPE, // 'long'
@@ -58,7 +56,9 @@ enum TokenType {
     TOKEN_EXCLAMATION_MARK, // '!'
     TOKEN_AMPERSAND, // '&'
     TOKEN_EQUAL_EQUAL,   // '=='
+    TOKEN_TRIPLE_EQUAL,   // '==='
     TOKEN_NOT_EQUAL,     // '!='
+    TOKEN_STRICT_NOT_EQUAL, // '!=='
     TOKEN_GREATER,       // '>'
     TOKEN_LESS,          // '<'
     TOKEN_GREATER_EQUAL, // '>='
@@ -85,11 +85,14 @@ enum TokenType {
     TOKEN_PROTECTED, // 'protected'
     TOKEN_USING, // 'using'
     TOKEN_AS, // 'as'
+    TOKEN_EXTENDS, // 'extends'
+    TOKEN_CONSTRUCTOR, // 'constructor'
+    TOKEN_DESTRUCTOR // 'destructor'
 };
 
 // Keyword List
 const std::unordered_map<std::string, TokenType> keywordMap = {
-        {"let", TOKEN_LET},
+        {"const", TOKEN_CONST},
         {"int", TOKEN_INT_TYPE},
         {"short", TOKEN_SHORT_TYPE},
         {"long", TOKEN_LONG_TYPE},
@@ -128,7 +131,10 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"private", TOKEN_PRIVATE},
         {"protected", TOKEN_PROTECTED},
         {"using", TOKEN_USING},
-        {"as", TOKEN_AS}
+        {"as", TOKEN_AS},
+        {"extends", TOKEN_EXTENDS},
+        {"constructor", TOKEN_CONSTRUCTOR},
+        {"destructor", TOKEN_DESTRUCTOR}
 };
 
 
@@ -205,7 +211,11 @@ std::vector<Token> Lexer(const std::string& input) {
                 break;
             }
             case '=':
-                if (i + 1 < input.size() && input[i + 1] == '=') {
+                if (i + 2 < input.size() && input[i + 1] == '=' && input[i + 2] == '=') {
+                    tokens.push_back({TOKEN_TRIPLE_EQUAL, "===", line, column});
+                    i += 2;
+                    column += 3;
+                } else if (i + 1 < input.size() && input[i + 1] == '=') {
                     tokens.push_back({TOKEN_EQUAL_EQUAL, "==", line, column});
                     i++;
                     column += 2;
@@ -289,7 +299,11 @@ std::vector<Token> Lexer(const std::string& input) {
                 column++;
                 break;
             case '!':
-                if (i + 1 < input.size() && input[i + 1] == '=') {
+                if (i + 2 < input.size() && input[i + 1] == '=' && input[i + 2] == '=') {
+                    tokens.push_back({TOKEN_STRICT_NOT_EQUAL, "!==", line, column});
+                    i += 2;
+                    column += 3;
+                } else if (i + 1 < input.size() && input[i + 1] == '=') {
                     tokens.push_back({TOKEN_NOT_EQUAL, "!=", line, column});
                     i++;
                     column += 2;
