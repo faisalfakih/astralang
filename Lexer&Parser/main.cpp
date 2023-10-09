@@ -145,6 +145,12 @@ namespace AstraLang {
         std::unique_ptr<TypeRepresentation> type;
     };
 
+    class ReferenceType : public TypeRepresentation {
+    public:
+        explicit ReferenceType(std::unique_ptr<TypeRepresentation> type) : type(std::move(type)) {}
+        std::unique_ptr<TypeRepresentation> type;
+    };
+
     class MemberVariable : public TypeRepresentation {
     public:
         MemberVariable(std::unique_ptr<TypeRepresentation> type, std::string name)
@@ -329,17 +335,31 @@ namespace AstraLang {
     // For Loop
     class ForLoop : public Statement {
     public:
-        ForLoop(std::unique_ptr<Statement> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
+        ForLoop(std::unique_ptr<VariableDeclaration> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
                      std::unique_ptr<Statement> body)
                 : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)),
                   forScope(std::make_unique<Scope>()) {}
-        std::unique_ptr<Statement> initializer;
+        std::unique_ptr<VariableDeclaration> initializer;
         std::unique_ptr<Expression> condition;
         std::unique_ptr<Expression> increment;
         std::unique_ptr<Statement> body;
         std::unique_ptr<Scope> forScope;
     };
 
+    // For Each
+    class ForEachLoop : public Statement {
+    public:
+        ForEachLoop(std::unique_ptr<TypeRepresentation> variableType, std::string variableName, std::unique_ptr<Expression> iterable,
+                    std::unique_ptr<Statement> body)
+                : variableType(std::move(variableType)), variableName(std::move(variableName)), iterable(std::move(iterable)),
+                  body(std::move(body)), forEachScope(std::make_unique<Scope>()) {}
+
+        std::unique_ptr<TypeRepresentation> variableType;
+        std::string variableName;
+        std::unique_ptr<Expression> iterable;
+        std::unique_ptr<Statement> body;
+        std::unique_ptr<Scope> forEachScope;
+    };
     // Return Statement
     class ReturnStatement : public Statement {
     public:
@@ -499,6 +519,53 @@ namespace AstraLang {
         }
 
 
+        // Variable Declaration
+        std::unique_ptr<VariableDeclaration> parseVariableDelcaration() {
+            std::unique_ptr<TypeRepresentation> type = parseType();
+            if (type == nullptr) { // If there is no type
+                throw std::runtime_error("Expected a type for variable declaration. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
+            }
+
+            expect(TokenType::TOKEN_IDENTIFIER);
+            std::string varName = currentToken().lexeme;
+
+            std::unique_ptr<Expression> initValue = nullptr;
+            if (match(TokenType::TOKEN_EQUAL)) {
+                initValue = parseExpression();
+            }
+
+            expect(TokenType::TOKEN_SEMI_COLON);
+
+            return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue));
+        }
+
+        std::unique_ptr<TypeRepresentation> parseType() {
+            std::map<TokenType, BasicType::Type> typeMap = {
+                    { TokenType::TOKEN_INT_TYPE, BasicType::INT },
+                    { TokenType::TOKEN_SHORT_TYPE, BasicType::SHORT },
+                    { TokenType::TOKEN_LONG_TYPE, BasicType::LONG },
+                    { TokenType::TOKEN_FLOAT_TYPE, BasicType::FLOAT },
+                    { TokenType::TOKEN_DOUBLE_TYPE, BasicType::DOUBLE },
+                    { TokenType::TOKEN_CHAR_TYPE, BasicType::CHAR },
+                    { TokenType::TOKEN_STRING_TYPE, BasicType::STRING },
+                    { TokenType::TOKEN_BOOL_TYPE, BasicType::BOOL },
+                    { TokenType::TOKEN_VOID_TYPE, BasicType::VOID }
+            };
+
+            for (const auto& [tokenType, basicType] : typeMap) {
+                if (match(tokenType)) {
+                    if (match(TokenType::TOKEN_ASTERISK)) {
+                        return std::make_unique<PointerType>(std::make_unique<BasicType>(basicType));
+                    } else if (match(TokenType::TOKEN_AMPERSAND)) {
+                        return std::make_unique<ReferenceType>(std::make_unique<BasicType>(basicType));
+                    }
+                    return std::make_unique<BasicType>(basicType);
+                }
+            }
+
+            return nullptr; // No type matched
+        }
+
         // Parse Expressions
         std::unique_ptr<Expression> parseExpression() {
             return parseBinaryExpression();
@@ -578,8 +645,8 @@ namespace AstraLang {
 
         // Parse Statement
         std::unique_ptr<Statement> parseStatement() {
+            // TODO: Add extra statements
             if (match(TokenType::TOKEN_IF)) {
-                // TODO: Add other statement types
                 if (match(TokenType::TOKEN_IF)) {
                     return parseIfStatement();
                 } else if (match(TokenType::TOKEN_WHILE)) {
@@ -662,6 +729,49 @@ namespace AstraLang {
             return std::make_unique<WhileLoop>(std::move(condition), std::move(body));
         }
 
+        // For Loop
+        std::unique_ptr<Statement> parseForLoop() {
+            expect(TokenType::TOKEN_FOR);
+            expect(TokenType::TOKEN_LPAREN);
+
+            if (peek(1).type == TokenType::TOKEN_COLON || peek(1).type == TokenType::TOKEN_OF) {
+                // We have detected a for-each loop
+                std::unique_ptr<TypeRepresentation> variableType = parseType();
+                expect(TokenType::TOKEN_IDENTIFIER);
+                std::string variableName = currentToken().lexeme;
+                expect(TokenType::TOKEN_COLON);
+                std::unique_ptr<Expression> iterable = parseExpression();
+                expect(TokenType::TOKEN_RPAREN);
+
+                std::unique_ptr<Statement> body;
+                if (match(TokenType::TOKEN_LBRACE)) {
+                    body = parseBlockStatement();
+                } else {
+                    throw std::runtime_error("Expected '{' after for-each declaration at line " + std::to_string(currentToken().line));
+                }
+
+                return std::make_unique<ForEachLoop>(std::move(variableType), variableName, std::move(iterable), std::move(body));
+            } else {
+                std::unique_ptr<VariableDeclaration> declaration = parseVariableDelcaration();
+                expect(TokenType::TOKEN_SEMI_COLON);
+                std::unique_ptr<Expression> condition = parseExpression();
+                std::unique_ptr<Expression> increment = parseExpression();
+                expect(TokenType::TOKEN_RPAREN);
+
+                std::unique_ptr<Statement> body;
+                if (match(TokenType::TOKEN_LBRACE)) {
+                    body = parseBlockStatement();
+                } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
+                    consumeToken();  // consume newline if it's there
+                    body = parseStatement();
+                } else {
+                    throw std::runtime_error("Expected '{', newline, or start of statement after for condition at line " + std::to_string(currentToken().line));
+                }
+
+                return std::make_unique<ForLoop>(std::move(declaration), std::move(condition), std::move(increment), std::move(body));
+
+            }
+        }
 
 
         bool isStartOfStatement(const Token& token) {

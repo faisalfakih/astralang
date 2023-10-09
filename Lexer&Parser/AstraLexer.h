@@ -101,7 +101,8 @@ enum TokenType {
     TOKEN_VIRTUAL, // 'virtual'
     TOKEN_OVERRIDE, // 'override'
     TOKEN_ABSTRACT, // 'abstract'
-    TOKEN_NEWLINE // '\n'
+    TOKEN_NEWLINE, // '\n'
+    TOKEN_OF // 'of'
 };
 
 // Keyword List
@@ -134,7 +135,7 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"read", TOKEN_READ},
         {"vector", TOKEN_VECTOR},
         {"map", TOKEN_MAP},
-        {"unordered_map", TOKEN_UNORDERED_MAP},
+        {"u_map", TOKEN_UNORDERED_MAP},
         {"struct", TOKEN_STRUCT},
         {"class", TOKEN_CLASS},
         {"this", TOKEN_THIS},
@@ -160,7 +161,8 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"static", TOKEN_STATIC},
         {"virtual", TOKEN_VIRTUAL},
         {"override", TOKEN_OVERRIDE},
-        {"abstract", TOKEN_ABSTRACT}
+        {"abstract", TOKEN_ABSTRACT},
+        {"of", TOKEN_OF}
 };
 
 
