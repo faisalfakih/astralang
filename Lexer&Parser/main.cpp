@@ -194,7 +194,7 @@ namespace AstraLang {
             if (symbols.find(name) != symbols.end()) {
                 return symbols[name].get();
             }
-            // If not in the current scope, check in the parent scope.
+            // If not in the current scope, checkTokenType in the parent scope.
             if (parentScope) {
                 return parentScope->getSymbol(name);
             }
@@ -404,6 +404,22 @@ namespace AstraLang {
         std::unique_ptr<BlockStatement> finallyBlock;
     };
 
+    // Print Statement
+    class PrintStatement : public Statement {
+    public:
+        explicit PrintStatement(std::unique_ptr<Expression> valueToPrint)
+                : value(std::move(valueToPrint)) {}
+        std::unique_ptr<Expression> value;
+    };
+
+    // Read Statement
+    class ReadStatement : public Statement {
+    public:
+        explicit ReadStatement(std::unique_ptr<Expression> valueToRead)
+            : value(std::move(valueToRead)) {}
+        std::unique_ptr<Expression> value;
+    };
+
     class UnaryExpression : public Expression {
     public:
         enum Operator {
@@ -514,7 +530,7 @@ namespace AstraLang {
             nextToken();
         }
 
-        bool check(TokenType type) {
+        bool checkTokenType(TokenType type) {
             return peek().type == type;
         }
 
@@ -566,6 +582,36 @@ namespace AstraLang {
             return nullptr; // No type matched
         }
 
+        // Parse Parameters
+        std::unique_ptr<Parameter> parseParameter() {
+            std::unique_ptr<TypeRepresentation> paramType = parseType();
+            if (paramType == nullptr) {
+                throw std::runtime_error("Expected a type for parameter. Line: " + std::to_string(currentToken().line) + ".");
+            }
+
+            expect(TokenType::TOKEN_IDENTIFIER);
+            std::string paramName = currentToken().lexeme;
+
+            return std::make_unique<Parameter>(paramName, std::move(paramType));
+        }
+
+        // Parse Parameters
+        std::vector<std::unique_ptr<Parameter>> parseParameters() {
+            expect(TokenType::TOKEN_LPAREN); // Expect an opening parenthesis
+
+            std::vector<std::unique_ptr<Parameter>> params;
+
+            if (!checkTokenType(TokenType::TOKEN_RPAREN)) {
+                do {
+                    params.push_back(parseParameter()); // Parse the parameter
+                } while (match(TokenType::TOKEN_COMMA));
+            }
+
+            expect(TokenType::TOKEN_RPAREN); // Expect a closing parenthesis
+
+            return params;
+        }
+
         // Parse Expressions
         std::unique_ptr<Expression> parseExpression() {
             return parseBinaryExpression();
@@ -576,7 +622,7 @@ namespace AstraLang {
 
         std::unique_ptr<Expression> parseAdditionSubtraction() {
             auto left = parseMultiplicationDivision();
-            while (check(TokenType::TOKEN_PLUS) || check(TokenType::TOKEN_MINUS)) {
+            while (checkTokenType(TokenType::TOKEN_PLUS) || checkTokenType(TokenType::TOKEN_MINUS)) {
                 TokenType op = currentToken().type;
                 consumeToken();
                 auto right = parseMultiplicationDivision();
@@ -587,7 +633,7 @@ namespace AstraLang {
 
         std::unique_ptr<Expression> parseMultiplicationDivision() {
             auto left = parseUnaryExpression();
-            while (check(TokenType::TOKEN_ASTERISK) || check(TokenType::TOKEN_SLASH) || match(TokenType::TOKEN_PERCENT)) {
+            while (checkTokenType(TokenType::TOKEN_ASTERISK) || checkTokenType(TokenType::TOKEN_SLASH) || match(TokenType::TOKEN_PERCENT)) {
                 TokenType op = currentToken().type;
                 consumeToken();
                 auto right = parseUnaryExpression();
@@ -647,11 +693,15 @@ namespace AstraLang {
         std::unique_ptr<Statement> parseStatement() {
             // TODO: Add extra statements
             if (match(TokenType::TOKEN_IF)) {
-                if (match(TokenType::TOKEN_IF)) {
-                    return parseIfStatement();
-                } else if (match(TokenType::TOKEN_WHILE)) {
-                    return parseWhileLoop();
-                }
+                return parseIfStatement();
+            } else if (match(TokenType::TOKEN_WHILE)) {
+                return parseWhileLoop();
+            } else if (match(TokenType::TOKEN_FOR)) {
+                return parseForLoop();
+            } else if (match(TokenType::TOKEN_READ)) {
+                return parseReadStatement();
+            } else if (match(TokenType::TOKEN_PRINT)) {
+                return parsePrintStatement();
             } else {
                 throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column));
             }
@@ -662,7 +712,7 @@ namespace AstraLang {
 
             expect(TokenType::TOKEN_LBRACE);
 
-            while (!check(TokenType::TOKEN_RBRACE) && !check(TokenType::TOKEN_EOF)) {
+            while (!checkTokenType(TokenType::TOKEN_RBRACE) && !checkTokenType(TokenType::TOKEN_EOF)) {
                 statements.push_back(parseStatement());
                 expect(TokenType::TOKEN_SEMI_COLON);
             }
@@ -676,7 +726,7 @@ namespace AstraLang {
         // If Statements
         std::unique_ptr<Statement> parseIfStatement() {
             expect(TokenType::TOKEN_IF); // Check for the 'if' keyword
-            expect(TokenType::TOKEN_LPAREN); // Then check for an open bracket '('
+            expect(TokenType::TOKEN_LPAREN); // Then checkTokenType for an open bracket '('
 
             std::unique_ptr<Expression> condition = parseExpression(); // Parse the condition
             expect(TokenType::TOKEN_RPAREN); // Check for a closing bracket ')' after the condition
@@ -734,8 +784,8 @@ namespace AstraLang {
             expect(TokenType::TOKEN_FOR);
             expect(TokenType::TOKEN_LPAREN);
 
-            if (peek(1).type == TokenType::TOKEN_COLON || peek(1).type == TokenType::TOKEN_OF) {
-                // We have detected a for-each loop
+            if (peek(1).type == TokenType::TOKEN_OF) {
+                // A foreach loop is detected
                 std::unique_ptr<TypeRepresentation> variableType = parseType();
                 expect(TokenType::TOKEN_IDENTIFIER);
                 std::string variableName = currentToken().lexeme;
@@ -771,6 +821,30 @@ namespace AstraLang {
                 return std::make_unique<ForLoop>(std::move(declaration), std::move(condition), std::move(increment), std::move(body));
 
             }
+        }
+
+        std::unique_ptr<Statement> parsePrintStatement() {
+            expect(TokenType::TOKEN_PRINT);
+            expect(TokenType::TOKEN_LPAREN);
+
+
+            std::unique_ptr<Expression> expression = parseExpression();
+
+            expect(TokenType::TOKEN_RPAREN);
+            expect(TokenType::TOKEN_SEMI_COLON);
+
+            return std::make_unique<PrintStatement>(std::move(expression));
+
+        }
+
+        std::unique_ptr<Statement> parseReadStatement() {
+            expect(TokenType::TOKEN_READ);
+            expect(TokenType::TOKEN_LPAREN);
+
+            std::unique_ptr<Expression> expression = parseExpression();
+
+            expect(TokenType::TOKEN_RPAREN);
+            expect(TokenType::TOKEN_SEMI_COLON);
         }
 
 
