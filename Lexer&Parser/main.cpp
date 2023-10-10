@@ -13,10 +13,11 @@ namespace AstraLang {
     // Importing Libraries
     class Import : public ASTNode {
     public:
-        explicit Import(std::string modulePath)
-                : modulePath(std::move(modulePath)) {}
+        explicit Import(std::string libraryName, std::string alias = "")
+                : libraryName(std::move(libraryName)), alias(std::move(alias)) {}
 
-        std::string modulePath;
+        std::string libraryName;
+        std::string alias;
     };
 
     // Abstract class for all expressions
@@ -690,7 +691,7 @@ namespace AstraLang {
         }
 
         // Parse Statement
-        std::unique_ptr<Statement> parseStatement() {
+        std::unique_ptr<ASTNode> parseStatement() {
             // TODO: Add extra statements
             if (match(TokenType::TOKEN_IF)) {
                 return parseIfStatement();
@@ -702,6 +703,8 @@ namespace AstraLang {
                 return parseReadStatement();
             } else if (match(TokenType::TOKEN_PRINT)) {
                 return parsePrintStatement();
+            } else if (match(TokenType::TOKEN_IMPORT)) {
+                return parseImportStatement();
             } else {
                 throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column));
             }
@@ -845,7 +848,34 @@ namespace AstraLang {
 
             expect(TokenType::TOKEN_RPAREN);
             expect(TokenType::TOKEN_SEMI_COLON);
+
+            return std::make_unique<ReadStatement>(std::move(expression));
         }
+
+        std::unique_ptr<ASTNode> parseImportStatement() {
+            expect(TokenType::TOKEN_IMPORT); // Checks for the import keyword
+
+            if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
+                throw std::runtime_error("Expected a module name after 'import' at line " + std::to_string(currentToken().line) + ".");
+            }
+
+            std::string moduleName = currentToken().lexeme;
+            consumeToken(); // Move to the next token after capturing the moduleName
+
+            std::string alias;
+            if (match(TokenType::TOKEN_AS)) {
+                if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
+                    throw std::runtime_error("Expected an alias after 'as' at line " + std::to_string(currentToken().line) + ".");
+                }
+                alias = currentToken().lexeme;
+                consumeToken(); // Move to the next token after capturing the alias
+            }
+
+            expect(TokenType::TOKEN_SEMI_COLON);
+
+            return std::make_unique<Import>(moduleName, alias.empty() ? moduleName : alias);
+        }
+
 
 
         bool isStartOfStatement(const Token& token) {
