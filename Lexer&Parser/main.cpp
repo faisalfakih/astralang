@@ -243,55 +243,7 @@ namespace AstraLang {
         std::vector<Modifier::Type> modifiers;
     };
 
-
-    // Declarations
-    class VariableDeclaration : public ModifiableDeclaration {
-    public:
-        VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr)
-                : type(std::move(type)), name(std::move(name)), value(std::move(value)) {}
-        std::unique_ptr<TypeRepresentation> type;
-        std::string name;
-        std::unique_ptr<Expression> value;
-    };
-
-    class FunctionDeclaration : public ModifiableDeclaration {
-    public:
-        FunctionDeclaration(std::string name, std::vector<std::unique_ptr<Parameter>> params, std::unique_ptr<TypeRepresentation> returnType = nullptr)
-                : name(std::move(name)), params(std::move(params)), returnType(std::move(returnType)), functionScope(new Scope()) {}
-
-        std::string name;
-        std::vector<std::unique_ptr<Parameter>> params;
-        std::unique_ptr<TypeRepresentation> returnType;
-        std::unique_ptr<Scope> functionScope;
-    };
-
-    class ClassDeclaration : public ModifiableDeclaration {
-    public:
-        ClassDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
-                         std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
-                         : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
-                            protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
-        std::string name;
-        std::vector<std::unique_ptr<MemberVariable>> privateMembers;
-        std::vector<std::unique_ptr<MemberVariable>> publicMembers;
-        std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
-        std::vector<std::unique_ptr<FunctionDeclaration>> methods;
-        std::unique_ptr<Scope> classScope;
-    };
-    class StructDeclaration : public ModifiableDeclaration {
-    public:
-        StructDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
-                          std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
-                : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
-                  protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
-        std::string name;
-        std::vector<std::unique_ptr<MemberVariable>> privateMembers;
-        std::vector<std::unique_ptr<MemberVariable>> publicMembers;
-        std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
-        std::vector<std::unique_ptr<FunctionDeclaration>> methods;
-        std::unique_ptr<Scope> classScope;
-    };
-
+    // Statements
     // Base class for statements
     class Statement : public ASTNode {};
 
@@ -331,20 +283,6 @@ namespace AstraLang {
         std::unique_ptr<Expression> condition;
         std::unique_ptr<Statement> body;
         std::unique_ptr<Scope> whileScope;
-    };
-
-    // For Loop
-    class ForLoop : public Statement {
-    public:
-        ForLoop(std::unique_ptr<VariableDeclaration> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
-                     std::unique_ptr<Statement> body)
-                : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)),
-                  forScope(std::make_unique<Scope>()) {}
-        std::unique_ptr<VariableDeclaration> initializer;
-        std::unique_ptr<Expression> condition;
-        std::unique_ptr<Expression> increment;
-        std::unique_ptr<Statement> body;
-        std::unique_ptr<Scope> forScope;
     };
 
     // For Each
@@ -417,8 +355,77 @@ namespace AstraLang {
     class ReadStatement : public Statement {
     public:
         explicit ReadStatement(std::unique_ptr<Expression> valueToRead)
-            : value(std::move(valueToRead)) {}
+                : value(std::move(valueToRead)) {}
         std::unique_ptr<Expression> value;
+    };
+
+    // Declarations
+    class VariableDeclaration : public ModifiableDeclaration {
+    public:
+        VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr)
+                : type(std::move(type)), name(std::move(name)), value(std::move(value)) {}
+        std::unique_ptr<TypeRepresentation> type;
+        std::string name;
+        std::unique_ptr<Expression> value;
+    };
+
+    class FunctionDeclaration : public ModifiableDeclaration {
+    public:
+        FunctionDeclaration(std::string name,
+                            std::vector<std::unique_ptr<Parameter>> params,
+                            std::unique_ptr<TypeRepresentation> returnType = nullptr,
+                            std::unique_ptr<Statement> body = nullptr)
+                : name(std::move(name)), params(std::move(params)), returnType(std::move(returnType)),
+                  body(std::move(body)), functionScope(new Scope()) {}
+
+        std::string name;
+        std::vector<std::unique_ptr<Parameter>> params;
+        std::unique_ptr<TypeRepresentation> returnType;
+        std::unique_ptr<Statement> body;
+        std::unique_ptr<Scope> functionScope;
+    };
+
+
+    class ClassDeclaration : public ModifiableDeclaration {
+    public:
+        ClassDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
+                         std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
+                         : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
+                            protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
+        std::string name;
+        std::vector<std::unique_ptr<MemberVariable>> privateMembers;
+        std::vector<std::unique_ptr<MemberVariable>> publicMembers;
+        std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
+        std::vector<std::unique_ptr<FunctionDeclaration>> methods;
+        std::unique_ptr<Scope> classScope;
+    };
+    class StructDeclaration : public ModifiableDeclaration {
+    public:
+        StructDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
+                          std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
+                : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
+                  protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
+        std::string name;
+        std::vector<std::unique_ptr<MemberVariable>> privateMembers;
+        std::vector<std::unique_ptr<MemberVariable>> publicMembers;
+        std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
+        std::vector<std::unique_ptr<FunctionDeclaration>> methods;
+        std::unique_ptr<Scope> classScope;
+    };
+
+    // For Loops
+    // For Loop
+    class ForLoop : public Statement {
+    public:
+        ForLoop(std::unique_ptr<VariableDeclaration> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
+                std::unique_ptr<Statement> body)
+                : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)),
+                  forScope(std::make_unique<Scope>()) {}
+        std::unique_ptr<VariableDeclaration> initializer;
+        std::unique_ptr<Expression> condition;
+        std::unique_ptr<Expression> increment;
+        std::unique_ptr<Statement> body;
+        std::unique_ptr<Scope> forScope;
     };
 
     class UnaryExpression : public Expression {
@@ -691,7 +698,7 @@ namespace AstraLang {
         }
 
         // Parse Statement
-        std::unique_ptr<ASTNode> parseStatement() {
+        std::unique_ptr<Statement> parseStatement() {
             // TODO: Add extra statements
             if (match(TokenType::TOKEN_IF)) {
                 return parseIfStatement();
@@ -704,7 +711,11 @@ namespace AstraLang {
             } else if (match(TokenType::TOKEN_PRINT)) {
                 return parsePrintStatement();
             } else if (match(TokenType::TOKEN_IMPORT)) {
-                return parseImportStatement();
+                Statement* stmtPtr = dynamic_cast<Statement*>(parseImportStatement().release());
+                if(!stmtPtr) {
+                    throw std::runtime_error("Unexpected error at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column));
+                }
+                std::unique_ptr<Statement> import(stmtPtr);
             } else {
                 throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column));
             }
@@ -722,7 +733,6 @@ namespace AstraLang {
 
             consumeToken();  // Consume the closing brace TOKEN_RBRACE
             return std::make_unique<BlockStatement>(std::move(statements));
-            // Assuming you have a BlockStatement class that takes a vector of Statements as its constructor.
         }
 
 
@@ -737,9 +747,11 @@ namespace AstraLang {
             std::unique_ptr<Statement> trueBranch;
             if (match((TokenType::TOKEN_LBRACE))) { // Check for an open curly brace '{'
                 trueBranch = parseBlockStatement(); // Parse the true branch
-            } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
-                consumeToken(); // Consume newline if it's there
-                trueBranch = parseStatement(); // Parse a single statement
+            } else if (peek().type == TokenType::TOKEN_NEWLINE) {
+                consumeToken();  // consume newline if it's there
+                trueBranch = parseStatement();
+            } else if (isStartOfStatement(peek())) {
+                trueBranch = parseStatement();
             } else {
                 throw std::runtime_error("Expected '{' or newline after if condition at line " + std::to_string(currentToken().line));
             }
@@ -750,9 +762,11 @@ namespace AstraLang {
                     falseBranch = parseIfStatement();
                 } else if (match(TokenType::TOKEN_LBRACE)) { // If next token is '{'
                     falseBranch = parseBlockStatement(); // Parse a block of statements
-                } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
-                    consumeToken(); // Consume newline if it's there
-                    falseBranch = parseStatement(); // Parse a single statement
+                } else if (peek().type == TokenType::TOKEN_NEWLINE) {
+                    consumeToken();  // consume newline if it's there
+                    falseBranch = parseStatement();
+                } else if (isStartOfStatement(peek())) {
+                    falseBranch = parseStatement();
                 } else {
                     throw std::runtime_error("Expected '{' or newline after else at line " + std::to_string(currentToken().line));
                 }
@@ -772,8 +786,10 @@ namespace AstraLang {
             std::unique_ptr<Statement> body;
             if (match(TokenType::TOKEN_LBRACE)) {
                 body = parseBlockStatement();
-            } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
+            } else if (peek().type == TokenType::TOKEN_NEWLINE) {
                 consumeToken();  // consume newline if it's there
+                body = parseStatement();
+            } else if (isStartOfStatement(peek())) {
                 body = parseStatement();
             } else {
                 throw std::runtime_error("Expected '{', newline, or start of statement after while condition at line " + std::to_string(currentToken().line));
@@ -814,8 +830,10 @@ namespace AstraLang {
                 std::unique_ptr<Statement> body;
                 if (match(TokenType::TOKEN_LBRACE)) {
                     body = parseBlockStatement();
-                } else if (peek().type == TokenType::TOKEN_NEWLINE || isStartOfStatement(peek())) {
+                } else if (peek().type == TokenType::TOKEN_NEWLINE) {
                     consumeToken();  // consume newline if it's there
+                    body = parseStatement();
+                } else if (isStartOfStatement(peek())) {
                     body = parseStatement();
                 } else {
                     throw std::runtime_error("Expected '{', newline, or start of statement after for condition at line " + std::to_string(currentToken().line));
@@ -831,13 +849,12 @@ namespace AstraLang {
             expect(TokenType::TOKEN_LPAREN);
 
 
-            std::unique_ptr<Expression> expression = parseExpression();
+            std::unique_ptr<Expression> expression = parsePrimaryExpression();
 
             expect(TokenType::TOKEN_RPAREN);
             expect(TokenType::TOKEN_SEMI_COLON);
 
             return std::make_unique<PrintStatement>(std::move(expression));
-
         }
 
         std::unique_ptr<Statement> parseReadStatement() {
@@ -852,7 +869,8 @@ namespace AstraLang {
             return std::make_unique<ReadStatement>(std::move(expression));
         }
 
-        std::unique_ptr<ASTNode> parseImportStatement() {
+        // Parse Import Statement
+        std::unique_ptr<Import> parseImportStatement() {
             expect(TokenType::TOKEN_IMPORT); // Checks for the import keyword
 
             if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
@@ -876,7 +894,43 @@ namespace AstraLang {
             return std::make_unique<Import>(moduleName, alias.empty() ? moduleName : alias);
         }
 
+        // Parse Function Declaration
+        std::unique_ptr<FunctionDeclaration> parseFunctionDeclaration() {
+            expect(TokenType::TOKEN_FN);
+            if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
+                throw std::runtime_error("Expected a function name after 'fn' at line " + std::to_string(currentToken().line) + ".");
+            }
 
+            std::string functionName = currentToken().lexeme;
+            consumeToken();
+
+            std::vector<std::unique_ptr<Parameter>> params = parseParameters();
+
+            // Check if the function returns a type
+            std::unique_ptr<TypeRepresentation> returnType = nullptr;
+            if (checkTokenType(TokenType::TOKEN_ARROW)) {
+                consumeToken();
+                returnType = parseType();
+                if (!returnType) {
+                    throw std::runtime_error("Expected return type after '->' at line " + std::to_string(currentToken().line));
+                }
+            }
+
+            std::unique_ptr<Statement> body;
+            // Code block
+            if (match(TokenType::TOKEN_LBRACE)) {
+                body = parseBlockStatement();
+            } else if (peek().type == TokenType::TOKEN_NEWLINE) {
+                consumeToken();  // consume newline if it's there
+                body = parseStatement();
+            } else if (isStartOfStatement(peek())) {
+                body = parseStatement();
+            } else {
+                throw std::runtime_error("Expected statement, new line or open bracket at line " + std::to_string(currentToken().line));
+            }
+
+            return std::make_unique<FunctionDeclaration>(functionName, std::move(params), std::move(returnType), std::move(body));
+        }
 
         bool isStartOfStatement(const Token& token) {
             switch(token.type) {
