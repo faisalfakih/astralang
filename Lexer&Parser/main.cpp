@@ -1,4 +1,5 @@
 #include "AstraLexer.h"
+#include <string>
 #include <memory>
 #include <variant>
 #include <vector>
@@ -154,11 +155,12 @@ namespace AstraLang {
 
     class MemberVariable : public TypeRepresentation {
     public:
-        MemberVariable(std::unique_ptr<TypeRepresentation> type, std::string name)
-                : type(std::move(type)), name(std::move(name)) {}
+        MemberVariable(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> initializer = nullptr)
+            : type(std::move(type)), name(std::move(name)), initializer(std::move(initializer)) {}
 
         std::unique_ptr<TypeRepresentation> type;
         std::string name;
+        std::unique_ptr<Expression> initializer;
     };
 
 
@@ -388,30 +390,63 @@ namespace AstraLang {
 
     class ClassDeclaration : public ModifiableDeclaration {
     public:
-        ClassDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
-                         std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
-                         : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
-                            protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
+        ClassDeclaration(std::string name, std::string baseClassName,
+                         std::vector<std::unique_ptr<MemberVariable>> privateMembers,
+                         std::vector<std::unique_ptr<MemberVariable>> publicMembers,
+                         std::vector<std::unique_ptr<MemberVariable>> protectedMembers,
+                         std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods,
+                         std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods,
+                         std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods)
+                : name(std::move(name)), baseClassName(std::move(baseClassName)),
+                  privateMembers(std::move(privateMembers)),
+                  publicMembers(std::move(publicMembers)),
+                  protectedMembers(std::move(protectedMembers)),
+                  privateMethods(std::move(privateMethods)),
+                  publicMethods(std::move(publicMethods)),
+                  protectedMethods(std::move(protectedMethods)),
+                  classScope(std::make_unique<Scope>()) {}
+
         std::string name;
+        std::string baseClassName;  // new member variable for base class name
         std::vector<std::unique_ptr<MemberVariable>> privateMembers;
         std::vector<std::unique_ptr<MemberVariable>> publicMembers;
         std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
-        std::vector<std::unique_ptr<FunctionDeclaration>> methods;
+        std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods;
+        std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods;
+        std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods;
         std::unique_ptr<Scope> classScope;
     };
+
+
     class StructDeclaration : public ModifiableDeclaration {
     public:
-        StructDeclaration(std::string name, std::vector<std::unique_ptr<MemberVariable>> privateMembers,std::vector<std::unique_ptr<MemberVariable>> publicMembers,
-                          std::vector<std::unique_ptr<MemberVariable>> protectedMembers, std::vector<std::unique_ptr<FunctionDeclaration>> methods)
-                : name(std::move(name)), privateMembers(std::move(privateMembers)), publicMembers(std::move(publicMembers)),
-                  protectedMembers(std::move(protectedMembers)), methods(std::move(methods)), classScope(std::make_unique<Scope>()) {}
+        StructDeclaration(std::string name, std::string baseClassName,
+                         std::vector<std::unique_ptr<MemberVariable>> privateMembers,
+                         std::vector<std::unique_ptr<MemberVariable>> publicMembers,
+                         std::vector<std::unique_ptr<MemberVariable>> protectedMembers,
+                         std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods,
+                         std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods,
+                         std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods)
+                : name(std::move(name)), baseClassName(std::move(baseClassName)),
+                  privateMembers(std::move(privateMembers)),
+                  publicMembers(std::move(publicMembers)),
+                  protectedMembers(std::move(protectedMembers)),
+                  privateMethods(std::move(privateMethods)),
+                  publicMethods(std::move(publicMethods)),
+                  protectedMethods(std::move(protectedMethods)),
+                  classScope(std::make_unique<Scope>()) {}
+
         std::string name;
+        std::string baseClassName;  // new member variable for base class name
         std::vector<std::unique_ptr<MemberVariable>> privateMembers;
         std::vector<std::unique_ptr<MemberVariable>> publicMembers;
         std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
-        std::vector<std::unique_ptr<FunctionDeclaration>> methods;
+        std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods;
+        std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods;
+        std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods;
         std::unique_ptr<Scope> classScope;
     };
+
 
     // For Loops
     // For Loop
@@ -894,6 +929,45 @@ namespace AstraLang {
             return std::make_unique<Import>(moduleName, alias.empty() ? moduleName : alias);
         }
 
+        // Parse Class Methods
+        std::unique_ptr<FunctionDeclaration> parseMethodDeclaration() {
+            expect(TokenType::TOKEN_FN);
+            if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
+                throw std::runtime_error("Expected a method name after 'fn' at line " + std::to_string(currentToken().line) + ".");
+            }
+
+            std::string methodName = currentToken().lexeme;
+            consumeToken();
+
+            std::vector<std::unique_ptr<Parameter>> params = parseParameters();
+
+            // Check if the method returns a type
+            std::unique_ptr<TypeRepresentation> returnType = nullptr;
+            if (checkTokenType(TokenType::TOKEN_ARROW)) {
+                consumeToken();
+                returnType = parseType();
+                if (!returnType) {
+                    throw std::runtime_error("Expected return type after '->' at line " + std::to_string(currentToken().line));
+                }
+            }
+
+            std::unique_ptr<Statement> body;
+            // Code block
+            if (match(TokenType::TOKEN_LBRACE)) {
+                body = parseBlockStatement();
+            } else if (peek().type == TokenType::TOKEN_NEWLINE) {
+                consumeToken();  // consume newline if it's there
+                body = parseStatement();
+            } else if (isStartOfStatement(peek())) {
+                body = parseStatement();
+            } else {
+                throw std::runtime_error("Expected statement, new line or open bracket at line " + std::to_string(currentToken().line));
+            }
+
+            return std::make_unique<FunctionDeclaration>(methodName, std::move(params), std::move(returnType), std::move(body));
+        }
+
+
         // Parse Function Declaration
         std::unique_ptr<FunctionDeclaration> parseFunctionDeclaration() {
             expect(TokenType::TOKEN_FN);
@@ -930,6 +1004,205 @@ namespace AstraLang {
             }
 
             return std::make_unique<FunctionDeclaration>(functionName, std::move(params), std::move(returnType), std::move(body));
+        }
+
+        // Parse Variable Declarations
+        std::unique_ptr<VariableDeclaration> parseVariableDeclaration() {
+            std::unique_ptr<TypeRepresentation> type = parseType();
+            if (type == nullptr) { // If there is no type
+                throw std::runtime_error("Expected a type for variable declaration. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
+            }
+
+            expect(TokenType::TOKEN_IDENTIFIER);
+            std::string varName = currentToken().lexeme;
+
+            std::unique_ptr<Expression> initValue = nullptr;
+            if (match(TokenType::TOKEN_EQUAL)) {
+                initValue = parseExpression();
+            }
+
+            expect(TokenType::TOKEN_SEMI_COLON);
+
+            return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue));
+        }
+
+        // Parse Class Declarations
+        std::unique_ptr<ClassDeclaration> parseClassDeclaration() {
+            enum AccessSpecifier {
+                PRIVATE,
+                PUBLIC,
+                PROTECTED
+            };
+
+            AccessSpecifier accessSpecifier = AccessSpecifier::PRIVATE;
+
+            expect(TokenType::TOKEN_CLASS);
+            if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                throw std::runtime_error("Expected a class name after 'class' at line " + std::to_string(currentToken().line) + ".");
+            }
+
+            std::string className = currentToken().lexeme;
+            consumeToken();
+
+            std::string baseClassName;
+            if (checkTokenType(TokenType::TOKEN_EXTENDS)) {
+                consumeToken();
+                if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                    throw std::runtime_error("Expected a base class name after 'extends' at line " + std::to_string(currentToken().line) + ".");
+                }
+                baseClassName = currentToken().lexeme;
+                consumeToken();
+            }
+
+            std::vector<std::unique_ptr<MemberVariable>> privateMembers;
+            std::vector<std::unique_ptr<MemberVariable>> publicMembers;
+            std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
+            std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods;
+            std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods;
+            std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods;
+
+            expect(TokenType::TOKEN_LBRACE);  // Assuming the class body starts with a '{'
+
+            while (!checkTokenType(TokenType::TOKEN_RBRACE) && !isAtEnd()) {  // Continue until '}' or end of input
+                if (checkTokenType(TokenType::TOKEN_PRIVATE)) {
+                    accessSpecifier = AccessSpecifier::PRIVATE;
+                    consumeToken();
+                } else if (checkTokenType(TokenType::TOKEN_PUBLIC)) {
+                    accessSpecifier = AccessSpecifier::PUBLIC;
+                    consumeToken();
+                } else if (checkTokenType(TokenType::TOKEN_PROTECTED)) {
+                    accessSpecifier = AccessSpecifier::PROTECTED;
+                    consumeToken();
+                } else if (checkTokenType(TokenType::TOKEN_FN)) {
+                    auto method = parseMethodDeclaration();
+                    switch (accessSpecifier) {
+                        case AccessSpecifier::PRIVATE:
+                            privateMethods.push_back(std::move(method));
+                            break;
+                        case AccessSpecifier::PUBLIC:
+                            publicMethods.push_back(std::move(method));
+                            break;
+                        case AccessSpecifier::PROTECTED:
+                            protectedMethods.push_back(std::move(method));
+                            break;
+                    }
+                } else {
+                    throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + ".");
+                }
+            }
+
+            expect(TokenType::TOKEN_RBRACE);  // Consume the closing '}'
+
+            // Assuming your ClassDeclaration constructor matches this signature
+            return std::make_unique<ClassDeclaration>(className, baseClassName, std::move(privateMembers), std::move(publicMembers), std::move(protectedMembers), std::move(privateMethods), std::move(publicMethods), std::move(protectedMethods));
+        }
+
+        std::unique_ptr<StructDeclaration> parseStructDeclaration() {
+            enum AccessSpecifier {
+                PRIVATE,
+                PUBLIC,
+                PROTECTED
+            };
+
+            AccessSpecifier accessSpecifier = AccessSpecifier::PUBLIC;
+
+            expect(TokenType::TOKEN_CLASS);
+            if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                throw std::runtime_error("Expected a struct name after 'struct' at line " + std::to_string(currentToken().line) + ".");
+            }
+
+            std::string className = currentToken().lexeme;
+            consumeToken();
+
+            std::string baseClassName;
+            if (checkTokenType(TokenType::TOKEN_EXTENDS)) {
+                consumeToken();
+                if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                    throw std::runtime_error("Expected a base struct name after 'extends' at line " + std::to_string(currentToken().line) + ".");
+                }
+                baseClassName = currentToken().lexeme;
+                consumeToken();
+            }
+
+            std::vector<std::unique_ptr<MemberVariable>> privateMembers;
+            std::vector<std::unique_ptr<MemberVariable>> publicMembers;
+            std::vector<std::unique_ptr<MemberVariable>> protectedMembers;
+            std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods;
+            std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods;
+            std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods;
+
+            expect(TokenType::TOKEN_LBRACE);  // Assuming the class body starts with a '{'
+
+            while (!checkTokenType(TokenType::TOKEN_RBRACE) && !isAtEnd()) {  // Continue until '}' or end of input
+                if (checkTokenType(TokenType::TOKEN_PRIVATE)) {
+                    accessSpecifier = AccessSpecifier::PRIVATE;
+                    consumeToken();
+                } else if (checkTokenType(TokenType::TOKEN_PUBLIC)) {
+                    accessSpecifier = AccessSpecifier::PUBLIC;
+                    consumeToken();
+                } else if (checkTokenType(TokenType::TOKEN_PROTECTED)) {
+                    accessSpecifier = AccessSpecifier::PROTECTED;
+                    consumeToken();
+                } else if (checkTokenType(TokenType::TOKEN_FN)) {
+                    auto method = parseMethodDeclaration();
+                    switch (accessSpecifier) {
+                        case AccessSpecifier::PRIVATE:
+                            privateMethods.push_back(std::move(method));
+                            break;
+                        case AccessSpecifier::PUBLIC:
+                            publicMethods.push_back(std::move(method));
+                            break;
+                        case AccessSpecifier::PROTECTED:
+                            protectedMethods.push_back(std::move(method));
+                            break;
+                    }
+                } else {
+                    throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + ".");
+                }
+            }
+
+            expect(TokenType::TOKEN_RBRACE);  // Consume the closing '}'
+
+            // Assuming your ClassDeclaration constructor matches this signature
+            return std::make_unique<StructDeclaration>(className, baseClassName, std::move(privateMembers), std::move(publicMembers), std::move(protectedMembers), std::move(privateMethods), std::move(publicMethods), std::move(protectedMethods));
+        }
+
+        // Parse Function Call
+        std::unique_ptr<FunctionCall> parseFunctionCall() {
+            if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
+                throw std::runtime_error("Expected a function name at line " + std::to_string(currentToken().line) + ".");
+            }
+
+            std::string functionName = currentToken().lexeme;
+            consumeToken();
+
+            // Check if the next token is an opening parenthesis
+            if (currentToken().type != TokenType::TOKEN_LPAREN) {
+                throw std::runtime_error("Expected '(' after function name at line " + std::to_string(currentToken().line) + ".");
+            }
+            consumeToken(); // consume '('
+
+            std::vector<std::unique_ptr<Expression>> arguments;
+            // Check if there are any arguments
+            if (currentToken().type != TokenType::TOKEN_RPAREN) {
+                do {
+                    arguments.push_back(parseExpression());
+
+                    // Check for more arguments
+                    if (currentToken().type != TokenType::TOKEN_COMMA) {
+                        break;
+                    }
+                    consumeToken(); // consume ','
+                } while (true);
+            }
+
+            // Check if the argument list is closed correctly
+            if (currentToken().type != TokenType::TOKEN_RPAREN) {
+                throw std::runtime_error("Expected ')' after arguments at line " + std::to_string(currentToken().line) + ".");
+            }
+            consumeToken(); // consume ')'
+
+            return std::make_unique<FunctionCall>(functionName, std::move(arguments));
         }
 
         bool isStartOfStatement(const Token& token) {
