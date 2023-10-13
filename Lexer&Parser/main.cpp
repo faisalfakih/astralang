@@ -1235,5 +1235,47 @@ namespace AstraLang {
                 currentScope = parent;
             }
         }
+
+        std::unique_ptr<ASTNode> parse() {
+            switch(currentToken().type) {
+                case TokenType::TOKEN_IMPORT:
+                    return parseImportStatement();
+                case TokenType::TOKEN_INT_TYPE:
+                case TokenType::TOKEN_SHORT_TYPE:
+                case TokenType::TOKEN_LONG_TYPE:
+                case TokenType::TOKEN_DOUBLE_TYPE:
+                case TokenType::TOKEN_FLOAT_TYPE:
+                case TokenType::TOKEN_BOOL_TYPE:
+                case TokenType::TOKEN_STRING_TYPE:
+                case TokenType::TOKEN_CHAR_TYPE:
+                case TokenType::TOKEN_VOID_TYPE:
+                    return parseVariableDeclaration();
+                case TokenType::TOKEN_IF:
+                    return parseIfStatement();
+                case TokenType::TOKEN_WHILE:
+                    return parseWhileLoop();
+                case TokenType::TOKEN_FOR:
+                    return parseForLoop();
+                case TokenType::TOKEN_FN:
+                    return parseFunctionDeclaration();
+                case TokenType::TOKEN_CLASS:
+                    return parseClassDeclaration();
+                case TokenType::TOKEN_STRUCT:
+                    return parseStructDeclaration();
+                case TokenType::TOKEN_IDENTIFIER:
+                    if (peek(1).type == TokenType::TOKEN_LPAREN) {
+                        return parseFunctionCall();
+                    } else {
+                        // TODO: Add a function for variable change
+                    }
+                case TokenType::TOKEN_STRING_LITERAL:
+                case TokenType::TOKEN_CHAR_LITERAL:
+                case TokenType::TOKEN_NUMBER:
+                    return parsePrimaryExpression();
+                default:
+                    throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + ".");
+            }
+            return nullptr;
+        }
     };
 }
