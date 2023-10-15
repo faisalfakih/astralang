@@ -57,7 +57,7 @@ enum TokenType {
     TOKEN_EXCLAMATION, // '!'
     TOKEN_AMPERSAND, // '&'
     TOKEN_EQUAL_EQUAL,   // '=='
-    TOKEN_TRIPLE_EQUAL,   // '==='
+    TOKEN_STRICT_EQUAL,   // '==='
     TOKEN_NOT_EQUAL,     // '!='
     TOKEN_STRICT_NOT_EQUAL, // '!=='
     TOKEN_GREATER,       // '>'
@@ -102,7 +102,14 @@ enum TokenType {
     TOKEN_OVERRIDE, // 'override'
     TOKEN_ABSTRACT, // 'abstract'
     TOKEN_NEWLINE, // '\n'
-    TOKEN_OF // 'of'
+    TOKEN_OF, // 'of'
+    TOKEN_PLUS_EQUAL, // '+='
+    TOKEN_MINUS_EQUAL, // '-='
+    TOKEN_ASTERISK_EQUAL, // '*='
+    TOKEN_SLASH_EQUAL, // '/='
+    TOKEN_PERCENT_EQUAL, // '%='
+    TOKEN_PLUS_PLUS, // '++'
+    TOKEN_MINUS_MINUS // '--'
 };
 
 // Keyword List
@@ -241,7 +248,7 @@ std::vector<Token> Lexer(const std::string& input) {
             }
             case '=':
                 if (i + 2 < input.size() && input[i + 1] == '=' && input[i + 2] == '=') {
-                    tokens.push_back({TOKEN_TRIPLE_EQUAL, "===", line, column});
+                    tokens.push_back({TOKEN_STRICT_EQUAL, "===", line, column});
                     i += 2;
                     column += 3;
                 } else if (i + 1 < input.size() && input[i + 1] == '=') {
@@ -254,6 +261,17 @@ std::vector<Token> Lexer(const std::string& input) {
                 }
                 break;
             case '+':
+                if (i + 1 < input.size() && input[i + 1] == '=') {
+                    tokens.push_back({TOKEN_PLUS_EQUAL, "+", line, column});
+                    column += 2;
+                    i++;
+                    break;
+                } else if (i + 1 < input.size() && input[i + 1] == '+') {
+                    tokens.push_back({TOKEN_PLUS_PLUS, "++", line, column});
+                    column += 2;
+                    i++;
+                    break;
+                }
                 tokens.push_back({TOKEN_PLUS, "+", line, column});
                 column++;
                 break;
@@ -263,15 +281,38 @@ std::vector<Token> Lexer(const std::string& input) {
                     i++;
                     column += 2;
                 } else {
+                    if (i + 1 < input.size() && input[i + 1] == '=') {
+                        tokens.push_back({TOKEN_MINUS_EQUAL, "+", line, column});
+                        column += 2;
+                        i++;
+                        break;
+                    } else if (i + 1 < input.size() && input[i + 1] == '+') {
+                        tokens.push_back({TOKEN_MINUS_MINUS, "++", line, column});
+                        column += 2;
+                        i++;
+                        break;
+                    }
                     tokens.push_back({TOKEN_MINUS, "-", line, column});
                     column++;
                 }
                 break;
             case '%':
+                if (i + 1 < input.size() && input[i + 1] == '=') {
+                    tokens.push_back({TOKEN_PERCENT_EQUAL, "+", line, column});
+                    column += 2;
+                    i++;
+                    break;
+                }
                 tokens.push_back({TOKEN_PERCENT, "%", line, column});
                 column++;
                 break;
             case '*':
+                if (i + 1 < input.size() && input[i + 1] == '=') {
+                    tokens.push_back({TOKEN_ASTERISK_EQUAL, "+", line, column});
+                    column += 2;
+                    i++;
+                    break;
+                }
                 tokens.push_back({TOKEN_ASTERISK, "*", line, column});
                 column++;
                 break;
@@ -299,6 +340,12 @@ std::vector<Token> Lexer(const std::string& input) {
                         column++;
                     }
                 } else {
+                    if (i + 1 < input.size() && input[i + 1] == '=') {
+                        tokens.push_back({TOKEN_SLASH_EQUAL, "+", line, column});
+                        column += 2;
+                        i++;
+                        break;
+                    }
                     tokens.push_back({TOKEN_SLASH, "/", line, column});
                     column++;
                 }
