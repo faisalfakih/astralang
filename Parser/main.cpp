@@ -1,4 +1,4 @@
-#include "AstraLexer.h"
+#include "../Lexer/AstraLexer.h"
 #include <string>
 #include <memory>
 #include <variant>
@@ -51,16 +51,6 @@ namespace AstraLang {
         Operator op;
         std::unique_ptr<Expression> left;
         std::unique_ptr<Expression> right;
-    };
-
-    enum AssignmentOperator { ASSIGN_ADD, ASSIGN_SUB, ASSIGN_MUL, ASSIGN_DIV, ASSIGN_MOD, ASSIGN }; // +=, -=, *=, /=, %=, =
-    class AssignmentExpression : public Expression {
-    public:
-        AssignmentExpression(AssignmentOperator op, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right)
-                : op(op), left(std::move(left)), right(std::move(right)) {}
-
-        AssignmentOperator op;
-        std::unique_ptr<Expression> left, right;
     };
 
 
@@ -335,6 +325,17 @@ namespace AstraLang {
         std::unique_ptr<BlockStatement> block;
     };
 
+    // Reassignment Statement
+    enum AssignmentOperator { ASSIGN_ADD, ASSIGN_SUB, ASSIGN_MUL, ASSIGN_DIV, ASSIGN_MOD, ASSIGN }; // +=, -=, *=, /=, %=, =
+    class AssignmentExpression : public Statement {
+    public:
+        AssignmentExpression(AssignmentOperator op, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right)
+                : op(op), left(std::move(left)), right(std::move(right)) {}
+
+        AssignmentOperator op;
+        std::unique_ptr<Expression> left, right;
+    };
+
     // Try statement
     class TryStatement : public Statement {
     public:
@@ -366,19 +367,33 @@ namespace AstraLang {
     // Read Statement
     class ReadStatement : public Statement {
     public:
-        explicit ReadStatement(std::unique_ptr<Expression> valueToRead)
-                : value(std::move(valueToRead)) {}
-        std::unique_ptr<Expression> value;
+        explicit ReadStatement(std::vector<std::unique_ptr<Statement>> valuesToRead)
+                : values(std::move(valuesToRead)) {}
+        std::vector<std::unique_ptr<Statement>> values;
     };
 
     // Declarations
-    class VariableDeclaration : public ModifiableDeclaration {
+    class VariableDeclaration : public Statement {
     public:
         VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr)
                 : type(std::move(type)), name(std::move(name)), value(std::move(value)) {}
         std::unique_ptr<TypeRepresentation> type;
         std::string name;
         std::unique_ptr<Expression> value;
+    };
+
+    class VariableCall : public Statement{
+    public:
+        // Constructor taking the name of the variable being called.
+        explicit VariableCall(const std::string& varName) : varName(varName) {}
+
+        // Getter for the variable name.
+        const std::string& getVarName() const { return varName; }
+
+        // Other methods as needed for your application...
+
+    private:
+        std::string varName;  // Name of the variable being called.
     };
 
     class FunctionDeclaration : public ModifiableDeclaration {
@@ -462,16 +477,21 @@ namespace AstraLang {
     // For Loop
     class ForLoop : public Statement {
     public:
-        ForLoop(std::unique_ptr<VariableDeclaration> initializer, std::unique_ptr<Expression> condition, std::unique_ptr<Expression> increment,
+        ForLoop(std::unique_ptr<TypeRepresentation> type, std::string varName,
+                std::unique_ptr<Expression> startExpr, std::unique_ptr<Expression> endExpr,
                 std::unique_ptr<Statement> body)
-                : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), body(std::move(body)),
-                  forScope(std::make_unique<Scope>()) {}
-        std::unique_ptr<VariableDeclaration> initializer;
-        std::unique_ptr<Expression> condition;
-        std::unique_ptr<Expression> increment;
+                : type(std::move(type)), varName(std::move(varName)),
+                  startExpr(std::move(startExpr)), endExpr(std::move(endExpr)),
+                  body(std::move(body)), forScope(std::make_unique<Scope>()) {}
+
+        std::unique_ptr<TypeRepresentation> type;
+        std::string varName;
+        std::unique_ptr<Expression> startExpr;
+        std::unique_ptr<Expression> endExpr;
         std::unique_ptr<Statement> body;
         std::unique_ptr<Scope> forScope;
     };
+
 
     class UnaryExpression : public Expression {
     public:
@@ -810,8 +830,13 @@ namespace AstraLang {
                     throw std::runtime_error("Unexpected error at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column));
                 }
                 std::unique_ptr<Statement> import(stmtPtr);
-            } else if (checkTokenType(TokenType::TOKEN_NEWLINE)) {
+            }
+            else if (checkTokenType(TokenType::TOKEN_NEWLINE)) {
                 consumeToken();  // consume newline if it's there
+            }  else if (checkTokenType(TokenType::TOKEN_INT_TYPE) || checkTokenType(TokenType::TOKEN_SHORT_TYPE) || checkTokenType(TokenType::TOKEN_LONG_TYPE) || checkTokenType(TokenType::TOKEN_FLOAT_TYPE) || checkTokenType(TokenType::TOKEN_DOUBLE_TYPE) || checkTokenType(TokenType::TOKEN_CHAR_TYPE) || checkTokenType(TokenType::TOKEN_STRING_TYPE) || checkTokenType(TokenType::TOKEN_BOOL_TYPE) || checkTokenType(TokenType::TOKEN_VOID_TYPE)) {
+                parseVariableDeclaration();
+            } else if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                parseVariableReassignment();
             } else {
                 throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column) + " at token " + peek().lexeme);
             }
@@ -819,9 +844,8 @@ namespace AstraLang {
         }
 
         std::unique_ptr<Statement> parseBlockStatement() {
-            std::vector<std::unique_ptr<Statement>> statements;
-
             expect(TokenType::TOKEN_LBRACE);
+            std::vector<std::unique_ptr<Statement>> statements;
 
             if (checkTokenType(TokenType::TOKEN_NEWLINE)) {
                 consumeToken();  // consume newline if it's there
@@ -902,45 +926,33 @@ namespace AstraLang {
         std::unique_ptr<Statement> parseForLoop() {
             expect(TokenType::TOKEN_FOR);
             expect(TokenType::TOKEN_LPAREN);
-
-            if (peek(2).type == TokenType::TOKEN_OF) {
-                // A foreach loop is detected
-                std::unique_ptr<TypeRepresentation> variableType = parseType();
-                expect(TokenType::TOKEN_IDENTIFIER);
-                std::string variableName = currentToken().lexeme;
-                expect(TokenType::TOKEN_COLON);
-                std::unique_ptr<Expression> iterable = parseExpression();
-                expect(TokenType::TOKEN_RPAREN);
-
-                std::unique_ptr<Statement> body;
-                if (checkTokenType(TokenType::TOKEN_LBRACE)) {
-                    body = parseBlockStatement();
+            std::unique_ptr<TypeRepresentation> type = parseType();
+            if (!type) {
+                throw std::runtime_error("Expected a type for the loop variable at line " + std::to_string(currentToken().line));
+            }
+            if (!match(TokenType::TOKEN_IDENTIFIER)) {
+                throw std::runtime_error("Expected a variable name at line " + std::to_string(currentToken().line));
+            }
+            std::string varName;
+            varName = currentToken().lexeme;
+            if (match(TokenType::TOKEN_IN)) {
+                if (checkTokenType(TokenType::TOKEN_NUMBER) || checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                    std::unique_ptr<Expression> startExpr = parseExpression();
+                    if (match(TokenType::TOKEN_ARROW)) {
+                        std::unique_ptr<Expression> endExpr = parseExpression();
+                        expect(TokenType::TOKEN_RPAREN);
+                        std::unique_ptr<Statement> body = parseBlockStatement();
+                        return std::make_unique<ForLoop>(std::move(type), std::move(varName),
+                                                         std::move(startExpr), std::move(endExpr),
+                                                         std::move(body));
+                    } else {
+                        throw std::runtime_error("Expected '->' at line " + std::to_string(currentToken().line));
+                    }
                 } else {
-                    throw std::runtime_error("Expected '{' after for-each declaration at line " + std::to_string(currentToken().line));
+                    throw std::runtime_error("Expected a number or identifier after 'in' at line " + std::to_string(currentToken().line));
                 }
-
-                return std::make_unique<ForEachLoop>(std::move(variableType), variableName, std::move(iterable), std::move(body));
             } else {
-                std::unique_ptr<VariableDeclaration> declaration = parseVariableDeclaration();
-                expect(TokenType::TOKEN_SEMI_COLON);
-                std::unique_ptr<Expression> condition = parseExpression();
-                std::unique_ptr<Expression> increment = parseExpression();
-                expect(TokenType::TOKEN_RPAREN);
-
-                std::unique_ptr<Statement> body;
-                if (match(TokenType::TOKEN_LBRACE)) {
-                    body = parseBlockStatement();
-                } else if (peek().type == TokenType::TOKEN_NEWLINE) {
-                    consumeToken();  // consume newline if it's there
-                    body = parseStatement();
-                } else if (isStartOfStatement(peek())) {
-                    body = parseStatement();
-                } else {
-                    throw std::runtime_error("Expected '{', newline, or start of statement after for condition at line " + std::to_string(currentToken().line));
-                }
-
-                return std::make_unique<ForLoop>(std::move(declaration), std::move(condition), std::move(increment), std::move(body));
-
+                throw std::runtime_error("Expected 'in' at line " + std::to_string(currentToken().line));
             }
         }
 
@@ -960,12 +972,21 @@ namespace AstraLang {
             expect(TokenType::TOKEN_READ);
             expect(TokenType::TOKEN_LPAREN);
 
-            std::unique_ptr<Expression> expression = parseExpression();
+            std::vector<std::unique_ptr<Statement>> values;
+            while (!checkTokenType(TokenType::TOKEN_RPAREN)) {
+                std::unique_ptr<Statement> value = parseVariableDeclarationOrCall();
+                values.push_back(std::move(value));
+                if (checkTokenType(TokenType::TOKEN_COMMA)) {
+                    consumeToken();  // Consume the comma token.
+                } else if (!checkTokenType(TokenType::TOKEN_RPAREN)) {
+                    throw std::runtime_error("Expected ',' or ')' at line " + std::to_string(currentToken().line));
+                }
+            }
 
             expect(TokenType::TOKEN_RPAREN);
             expect(TokenType::TOKEN_SEMI_COLON);
 
-            return std::make_unique<ReadStatement>(std::move(expression));
+            return std::make_unique<ReadStatement>(std::move(values));
         }
 
         // Parse Import Statement
@@ -995,9 +1016,9 @@ namespace AstraLang {
 
         // Parse Class Methods
         std::unique_ptr<FunctionDeclaration> parseMethodDeclaration() {
-            expect(TokenType::TOKEN_FN);
+            expect(TokenType::TOKEN_FUNC);
             if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
-                throw std::runtime_error("Expected a method name after 'fn' at line " + std::to_string(currentToken().line) + ".");
+                throw std::runtime_error("Expected a method name after 'func' at line " + std::to_string(currentToken().line) + ".");
             }
 
             std::string methodName = currentToken().lexeme;
@@ -1034,9 +1055,9 @@ namespace AstraLang {
 
         // Parse Function Declaration
         std::unique_ptr<FunctionDeclaration> parseFunctionDeclaration() {
-            expect(TokenType::TOKEN_FN);
+            expect(TokenType::TOKEN_FUNC);
             if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
-                throw std::runtime_error("Expected a function name after 'fn' at line " + std::to_string(currentToken().line) + ".");
+                throw std::runtime_error("Expected a function name after 'func' at line " + std::to_string(currentToken().line) + ".");
             }
 
             std::string functionName = currentToken().lexeme;
@@ -1090,8 +1111,37 @@ namespace AstraLang {
             return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue));
         }
 
+        std::unique_ptr<VariableCall> parseVariableCall() {
+            std::string varName = currentToken().lexeme;
+            consumeToken();  // Consume the identifier token
+            expect(TokenType::TOKEN_SEMI_COLON);
+            return std::make_unique<VariableCall>(varName);
+        }
+
+        // Parse Variable Declaration or Reassignment
+        std::unique_ptr<Statement> parseVariableDeclarationOrCall() { // TODO: FIX THIS FUNCTION
+            if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                // Look ahead to the next token to decide whether it's a variable declaration or a call
+                TokenType nextType = peek().type;
+                if (nextType == TokenType::TOKEN_COLON || nextType == TokenType::TOKEN_EQUAL) {
+                    // It's a variable declaration
+                    return parseVariableDeclaration();
+                } else {
+                    // Assume it's a variable call
+                    return parseVariableCall();
+                }
+            } else {
+                throw std::runtime_error("Expected identifier at line " + std::to_string(currentToken().line));
+            }
+        }
+
         // Parse Class Declarations
         std::unique_ptr<ClassDeclaration> parseClassDeclaration() {
+            expect(TokenType::TOKEN_CLASS);
+            if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                throw std::runtime_error("Expected a class name after 'class' at line " + std::to_string(currentToken().line) + ".");
+            }
+
             enum AccessSpecifier {
                 PRIVATE,
                 PUBLIC,
@@ -1099,11 +1149,6 @@ namespace AstraLang {
             };
 
             AccessSpecifier accessSpecifier = AccessSpecifier::PRIVATE;
-
-            expect(TokenType::TOKEN_CLASS);
-            if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
-                throw std::runtime_error("Expected a class name after 'class' at line " + std::to_string(currentToken().line) + ".");
-            }
 
             std::string className = currentToken().lexeme;
             consumeToken();
@@ -1134,10 +1179,11 @@ namespace AstraLang {
                 } else if (checkTokenType(TokenType::TOKEN_PUBLIC)) {
                     accessSpecifier = AccessSpecifier::PUBLIC;
                     consumeToken();
+                    consumeToken();
                 } else if (checkTokenType(TokenType::TOKEN_PROTECTED)) {
                     accessSpecifier = AccessSpecifier::PROTECTED;
                     consumeToken();
-                } else if (checkTokenType(TokenType::TOKEN_FN)) {
+                } else if (checkTokenType(TokenType::TOKEN_FUNC)) {
                     auto method = parseMethodDeclaration();
                     switch (accessSpecifier) {
                         case AccessSpecifier::PRIVATE:
@@ -1151,7 +1197,7 @@ namespace AstraLang {
                             break;
                     }
                 } else {
-                    throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + ".");
+                    parseStatement();
                 }
             }
 
@@ -1170,7 +1216,7 @@ namespace AstraLang {
 
             AccessSpecifier accessSpecifier = AccessSpecifier::PUBLIC;
 
-            expect(TokenType::TOKEN_CLASS);
+            expect(TokenType::TOKEN_STRUCT);
             if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
                 throw std::runtime_error("Expected a struct name after 'struct' at line " + std::to_string(currentToken().line) + ".");
             }
@@ -1207,7 +1253,7 @@ namespace AstraLang {
                 } else if (checkTokenType(TokenType::TOKEN_PROTECTED)) {
                     accessSpecifier = AccessSpecifier::PROTECTED;
                     consumeToken();
-                } else if (checkTokenType(TokenType::TOKEN_FN)) {
+                } else if (checkTokenType(TokenType::TOKEN_FUNC)) {
                     auto method = parseMethodDeclaration();
                     switch (accessSpecifier) {
                         case AccessSpecifier::PRIVATE:
@@ -1407,7 +1453,7 @@ namespace AstraLang {
                     return parseWhileLoop();
                 case TokenType::TOKEN_FOR:
                     return parseForLoop();
-                case TokenType::TOKEN_FN:
+                case TokenType::TOKEN_FUNC:
                     return parseFunctionDeclaration();
                 case TokenType::TOKEN_CLASS:
                     return parseClassDeclaration();
@@ -1454,7 +1500,7 @@ int main() {
     std::ios_base::sync_with_stdio(false);
 
     // Test
-    std::ifstream file("/Users/faisalfakih/Desktop/Coding/AstraLang/Lexer&Parser/test.astra");
+    std::ifstream file("/Users/faisalfakih/Desktop/Coding/AstraLang/Parser/test.astra");
     if (!file.is_open()) {
         std::cerr << "Unable to open file\n";
         return 1;
@@ -1474,6 +1520,6 @@ int main() {
     auto end = std::chrono::high_resolution_clock::now();  // Record end time
 
     std::chrono::duration<double> time_taken = end - start;  // Compute the difference
-    std::cout << GREEN << "Code works!\n" << BLUE << "Time taken: " << time_taken.count() * 1000  << std::setprecision(20) << " milliseconds" << RESET;
+    LOG(GREEN << "Code works!\n" << BLUE << "Time taken: " << time_taken.count() * 1000  << std::setprecision(20) << " milliseconds" << RESET);
     return 0;
 }

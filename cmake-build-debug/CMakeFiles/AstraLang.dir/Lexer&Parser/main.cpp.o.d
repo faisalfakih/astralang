@@ -1,6 +1,6 @@
 CMakeFiles/AstraLang.dir/Lexer&Parser/main.cpp.o: \
   /Users/faisalfakih/Desktop/Coding/AstraLang/Lexer&Parser/main.cpp \
-  /Users/faisalfakih/Desktop/Coding/AstraLang/Lexer&Parser/AstraLexer.h \
+  /Users/faisalfakih/Desktop/Coding/AstraLang/Lexer&Parser/../Lexer/AstraLexer.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/string \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__config \
   /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include/c++/v1/__config_site \

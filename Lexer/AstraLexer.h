@@ -34,7 +34,7 @@ enum TokenType {
     TOKEN_VOID_TYPE, // 'void'
     TOKEN_IDENTIFIER, // Identifier
     TOKEN_SEMI_COLON, // ';'
-    TOKEN_FN, // 'fn'
+    TOKEN_FUNC, // 'func'
     TOKEN_ARROW, // '->'
     TOKEN_LBRACE, // '{'
     TOKEN_RBRACE, // '}'
@@ -102,7 +102,7 @@ enum TokenType {
     TOKEN_OVERRIDE, // 'override'
     TOKEN_ABSTRACT, // 'abstract'
     TOKEN_NEWLINE, // '\n'
-    TOKEN_OF, // 'of'
+    TOKEN_IN, // 'in'
     TOKEN_PLUS_EQUAL, // '+='
     TOKEN_MINUS_EQUAL, // '-='
     TOKEN_ASTERISK_EQUAL, // '*='
@@ -114,27 +114,27 @@ enum TokenType {
 
 // Keyword List
 const std::unordered_map<std::string, TokenType> keywordMap = {
-        {"const", TOKEN_CONST},
-        {"int", TOKEN_INT_TYPE},
-        {"short", TOKEN_SHORT_TYPE},
-        {"long", TOKEN_LONG_TYPE},
-        {"float", TOKEN_FLOAT_TYPE},
-        {"double", TOKEN_DOUBLE_TYPE},
-        {"char", TOKEN_CHAR_TYPE},
-        {"string", TOKEN_STRING_TYPE},
-        {"bool", TOKEN_BOOL_TYPE},
-        {"void", TOKEN_VOID_TYPE},
-        {"fn", TOKEN_FN},
-        {"return", TOKEN_RETURN},
-        {"if", TOKEN_IF},
-        {"else", TOKEN_ELSE},
-        {"while", TOKEN_WHILE},
-        {"for", TOKEN_FOR},
-        {"break", TOKEN_BREAK},
+        {"const",    TOKEN_CONST},
+        {"int",      TOKEN_INT_TYPE},
+        {"short",    TOKEN_SHORT_TYPE},
+        {"long",     TOKEN_LONG_TYPE},
+        {"float",    TOKEN_FLOAT_TYPE},
+        {"double",   TOKEN_DOUBLE_TYPE},
+        {"char",     TOKEN_CHAR_TYPE},
+        {"string",   TOKEN_STRING_TYPE},
+        {"bool",     TOKEN_BOOL_TYPE},
+        {"void",     TOKEN_VOID_TYPE},
+        {"func",       TOKEN_FUNC},
+        {"return",   TOKEN_RETURN},
+        {"if",       TOKEN_IF},
+        {"else",     TOKEN_ELSE},
+        {"while",    TOKEN_WHILE},
+        {"for",      TOKEN_FOR},
+        {"break",    TOKEN_BREAK},
         {"continue", TOKEN_CONTINUE},
-        {"true", TOKEN_TRUE},
-        {"false", TOKEN_FALSE},
-        {"try", TOKEN_TRY},
+        {"true",     TOKEN_TRUE},
+        {"false",    TOKEN_FALSE},
+        {"try",      TOKEN_TRY},
         {"catch", TOKEN_CATCH},
         {"finally", TOKEN_FINALLY},
         {"throw", TOKEN_THROW},
@@ -149,9 +149,9 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"new", TOKEN_NEW},
         {"delete", TOKEN_DELETE},
         {"null", TOKEN_NULL},
-        {"public", TOKEN_PUBLIC},
-        {"private", TOKEN_PRIVATE},
-        {"protected", TOKEN_PROTECTED},
+        {"public:", TOKEN_PUBLIC},
+        {"private:", TOKEN_PRIVATE},
+        {"protected:", TOKEN_PROTECTED},
         {"import", TOKEN_IMPORT},
         {"as", TOKEN_AS},
         {"extends", TOKEN_EXTENDS},
@@ -169,7 +169,7 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"virtual", TOKEN_VIRTUAL},
         {"override", TOKEN_OVERRIDE},
         {"abstract", TOKEN_ABSTRACT},
-        {"of", TOKEN_OF}
+        {"in", TOKEN_IN}
 };
 
 
