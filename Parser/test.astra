@@ -1,5 +1,1 @@
-for (int i in 10->0) {
-    print(i);
-    int j = 0;
-    j = 10;
-}
+string a;

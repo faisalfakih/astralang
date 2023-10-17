@@ -1123,42 +1123,30 @@ namespace AstraLang {
 
 
         std::unique_ptr<Statement> parseReadStatement() {
-            LOG("TEST");
             expect(TokenType::TOKEN_READ);
             expect(TokenType::TOKEN_LPAREN);
-            LOG("TEST");
             std::vector<std::unique_ptr<Statement>> declarations;
             std::vector<std::unique_ptr<Expression>> expressions;
 
             while (!checkTokenType(TokenType::TOKEN_RPAREN)) {
-                LOG("TEST");
                 // If it starts with a type, it's a variable declaration
                 if (isTypeName(currentToken().type) || checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
-                    LOG("TEST1");
                     std::unique_ptr<Statement> declaration = parseVariableDeclarationOrCall();
                     declarations.push_back(std::move(declaration));
                 } else {
-                    LOG("TEST2");
                     std::unique_ptr<Expression> value = parseExpression();
                     expressions.push_back(std::move(value));
                 }
-                LOG("TEST");
                 if (checkTokenType(TokenType::TOKEN_COMMA)) {
-                    LOG("TEST");
                     consumeToken();  // Consume the comma token.
                 } else if (!checkTokenType(TokenType::TOKEN_RPAREN)) {
-                    LOG("TEST");
                     throw std::runtime_error("Expected ',' or ')' at line " + std::to_string(currentToken().line));
                 }
-                LOG("TEST");
             }
 
-            LOG("TEST");
             expect(TokenType::TOKEN_RPAREN);
-            LOG("TEST");
             expect(TokenType::TOKEN_SEMI_COLON);
 
-            LOG("TEST");
             // Here, you'll want to merge your `declarations` and `expressions` into the final ReadStatement.
             return std::make_unique<ReadStatement>(std::move(declarations), std::move(expressions));
         }
@@ -1167,6 +1155,12 @@ namespace AstraLang {
             std::string varName = currentToken().lexeme;
             consumeToken();  // Consume the identifier token
             expect(TokenType::TOKEN_SEMI_COLON);
+            return std::make_unique<VariableCall>(varName);
+        }
+
+        std::unique_ptr<VariableCall> parseVariableCallWithinParameter() {
+            std::string varName = currentToken().lexeme;
+            consumeToken();  // Consume the identifier token
             return std::make_unique<VariableCall>(varName);
         }
 
@@ -1204,18 +1198,48 @@ namespace AstraLang {
             return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue));
         }
 
+        std::unique_ptr<VariableDeclaration> parseVariableDeclarationWithinParameter() {
+            std::unique_ptr<TypeRepresentation> type;
+
+            // First, try to parse known types.
+            if (isTypeName(currentToken().type)) {
+                type = parseType();
+            }
+                // Check if it's an identifier (possible custom type).
+            else if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                // The identifier itself is the custom type name.
+                type = std::make_unique<CustomType>(currentToken().lexeme);
+                consumeToken();  // Move past the custom type name.
+
+                // Now, check the next token for the variable name.
+                if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+                    throw std::runtime_error("Expected variable name after type. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
+                }
+            } else {
+                throw std::runtime_error("Expected a type for variable declaration. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
+            }
+
+            std::string varName = currentToken().lexeme;  // This is now the variable name.
+            consumeToken();  // Move past the variable name.
+
+            std::unique_ptr<Expression> initValue = nullptr;
+            if (match(TokenType::TOKEN_EQUAL)) {
+                initValue = parseExpression();
+            }
+
+            return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue));
+        }
 
         // Parse Variable Declaration or Reassignment
         std::unique_ptr<Statement> parseVariableDeclarationOrCall() {
-            LOG(BLUE << "TEST");
-            if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+            if (checkTokenType(TokenType::TOKEN_IDENTIFIER) || isTypeName(currentToken().type)) {
                 // Peek ahead to check if the next token type suggests a variable declaration.
-                if (peek(1).type == TokenType::TOKEN_EQUAL) {
+                if (peek(1).type == TokenType::TOKEN_IDENTIFIER) {
                     // Parse it as a variable declaration.
-                    return parseVariableDeclaration();
+                    return parseVariableDeclarationWithinParameter();
                 } else {
                     // Assume it's a variable call.
-                    return parseVariableCall();
+                    return parseVariableCallWithinParameter();
                 }
             } else {
                 throw std::runtime_error("Expected identifier at line " + std::to_string(currentToken().line));
