@@ -142,7 +142,7 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"read", TOKEN_READ},
         {"vector", TOKEN_VECTOR},
         {"map", TOKEN_MAP},
-        {"u_map", TOKEN_UNORDERED_MAP},
+        {"unordered_map", TOKEN_UNORDERED_MAP},
         {"struct", TOKEN_STRUCT},
         {"class", TOKEN_CLASS},
         {"this", TOKEN_THIS},
