@@ -125,7 +125,8 @@ namespace AstraLang {
             CHAR,
             STRING,
             BOOL,
-            VOID
+            VOID,
+            VAR
         };
 
         explicit BasicType(Type type) : type(type) {}
@@ -635,7 +636,8 @@ namespace AstraLang {
                     { TokenType::TOKEN_CHAR_TYPE, BasicType::CHAR },
                     { TokenType::TOKEN_STRING_TYPE, BasicType::STRING },
                     { TokenType::TOKEN_BOOL_TYPE, BasicType::BOOL },
-                    { TokenType::TOKEN_VOID_TYPE, BasicType::VOID }
+                    { TokenType::TOKEN_VOID_TYPE, BasicType::VOID },
+                    { TokenType::TOKEN_VAR, BasicType::VAR }
             };
 
             for (const auto& [tokenType, basicType] : typeMap) {
@@ -833,6 +835,7 @@ namespace AstraLang {
                 case TokenType::TOKEN_STRING_TYPE:
                 case TokenType::TOKEN_BOOL_TYPE:
                 case TokenType::TOKEN_VOID_TYPE:
+                case TokenType::TOKEN_VAR:
                     parseVariableDeclaration();
                     break;
                 case TokenType::TOKEN_IDENTIFIER:
@@ -840,6 +843,12 @@ namespace AstraLang {
                         parseVariableDeclaration();
                     parseVariableReassignment();
                     break;
+                case TokenType::TOKEN_RETURN:
+                    return parseReturnStatement();
+                case TokenType::TOKEN_BREAK:
+                    return parseBreakStatement();
+                case TokenType::TOKEN_CONTINUE:
+                    return parseContinueStatement();
                 default:
                     throw std::runtime_error("Unexpected token at line " + std::to_string(currentToken().line) + " column " + std::to_string(currentToken().column) + " at token " + peek().lexeme);
             }
@@ -1115,6 +1124,7 @@ namespace AstraLang {
                 case TokenType::TOKEN_STRING_TYPE:
                 case TokenType::TOKEN_BOOL_TYPE:
                 case TokenType::TOKEN_VOID_TYPE:
+                case TokenType::TOKEN_VAR:
                     return true;
                 default:
                     return false;
@@ -1286,17 +1296,21 @@ namespace AstraLang {
 
             while (!checkTokenType(TokenType::TOKEN_RBRACE) && !isAtEnd()) {  // Continue until '}' or end of input
                 if (checkTokenType(TokenType::TOKEN_PRIVATE)) {
-                    accessSpecifier = AccessSpecifier::PRIVATE;
                     consumeToken();
+                    expect(TokenType::TOKEN_COLON);
+                    accessSpecifier = AccessSpecifier::PRIVATE;
                 } else if (checkTokenType(TokenType::TOKEN_PUBLIC)) {
+                    consumeToken();
+                    expect(TokenType::TOKEN_COLON);
                     accessSpecifier = AccessSpecifier::PUBLIC;
                     consumeToken();
-                    consumeToken();
                 } else if (checkTokenType(TokenType::TOKEN_PROTECTED)) {
+                    consumeToken();
+                    expect(TokenType::TOKEN_COLON);
                     accessSpecifier = AccessSpecifier::PROTECTED;
                     consumeToken();
                 } else if (checkTokenType(TokenType::TOKEN_FUNC)) {
-                    auto method = parseMethodDeclaration();
+                    std::unique_ptr<FunctionDeclaration> method = parseMethodDeclaration();
                     switch (accessSpecifier) {
                         case AccessSpecifier::PRIVATE:
                             privateMethods.push_back(std::move(method));
@@ -1314,6 +1328,7 @@ namespace AstraLang {
             }
 
             expect(TokenType::TOKEN_RBRACE);  // Consume the closing '}'
+            expect(TokenType::TOKEN_SEMI_COLON);  // Consume the semicolon
 
             return std::make_unique<ClassDeclaration>(className, baseClassName, std::move(privateMembers), std::move(publicMembers), std::move(protectedMembers), std::move(privateMethods), std::move(publicMethods), std::move(protectedMethods));
         }
@@ -1425,7 +1440,7 @@ namespace AstraLang {
 
 
 
-        bool isStartOfStatement(const Token& token) {
+        static bool isStartOfStatement(const Token& token) {
             switch(token.type) {
                 case TOKEN_IF:         // if statement
                 case TOKEN_WHILE:      // while loop
@@ -1435,6 +1450,16 @@ namespace AstraLang {
                 case TOKEN_CONTINUE:   // continue statement
                 case TOKEN_PRINT:      // print statement
                 case TOKEN_IDENTIFIER: // variable assignment, function call, etc.
+                case TOKEN_INT_TYPE: // Variable Declarations
+                case TOKEN_SHORT_TYPE:
+                case TOKEN_LONG_TYPE:
+                case TOKEN_FLOAT_TYPE:
+                case TOKEN_DOUBLE_TYPE:
+                case TOKEN_CHAR_TYPE:
+                case TOKEN_STRING_TYPE:
+                case TOKEN_BOOL_TYPE:
+                case TOKEN_VOID_TYPE:
+                case TOKEN_VAR:
                     return true;
                 default:
                     return false;
@@ -1487,6 +1512,7 @@ namespace AstraLang {
                 case TokenType::TOKEN_STRING_TYPE:
                 case TokenType::TOKEN_CHAR_TYPE:
                 case TokenType::TOKEN_VOID_TYPE:
+                case TokenType::TOKEN_VAR:
                     return parseVariableDeclaration();
                 case TokenType::TOKEN_IF:
                     return parseIfStatement();

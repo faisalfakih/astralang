@@ -1,1 +1,13 @@
-string a;
+class Person {
+    int age;
+    int height;
+    int weight;
+};
+
+func a() {
+    print(x);
+}
+
+func main() {
+    var x = 10;
+}

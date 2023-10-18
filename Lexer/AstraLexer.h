@@ -32,6 +32,7 @@ enum TokenType {
     TOKEN_STRING_TYPE, // 'string'
     TOKEN_BOOL_TYPE, // 'bool'
     TOKEN_VOID_TYPE, // 'void'
+    TOKEN_VAR, // 'var'
     TOKEN_IDENTIFIER, // Identifier
     TOKEN_SEMI_COLON, // ';'
     TOKEN_FUNC, // 'func'
@@ -71,7 +72,6 @@ enum TokenType {
     TOKEN_VECTOR, // 'vector';
     TOKEN_MAP, // 'map';
     TOKEN_UNORDERED_MAP, // 'unordered_map';
-    TOKEN_STRUCT, // 'struct';
     TOKEN_CLASS, // 'class'
     TOKEN_COLON, // ':'
     TOKEN_THIS, // 'this'
@@ -124,6 +124,7 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"string",   TOKEN_STRING_TYPE},
         {"bool",     TOKEN_BOOL_TYPE},
         {"void",     TOKEN_VOID_TYPE},
+        {"var",      TOKEN_VAR},
         {"func",       TOKEN_FUNC},
         {"return",   TOKEN_RETURN},
         {"if",       TOKEN_IF},
@@ -143,15 +144,14 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"vector", TOKEN_VECTOR},
         {"map", TOKEN_MAP},
         {"unordered_map", TOKEN_UNORDERED_MAP},
-        {"struct", TOKEN_STRUCT},
         {"class", TOKEN_CLASS},
         {"this", TOKEN_THIS},
         {"new", TOKEN_NEW},
         {"delete", TOKEN_DELETE},
         {"null", TOKEN_NULL},
-        {"public:", TOKEN_PUBLIC},
-        {"private:", TOKEN_PRIVATE},
-        {"protected:", TOKEN_PROTECTED},
+        {"public", TOKEN_PUBLIC},
+        {"private", TOKEN_PRIVATE},
+        {"protected", TOKEN_PROTECTED},
         {"import", TOKEN_IMPORT},
         {"as", TOKEN_AS},
         {"extends", TOKEN_EXTENDS},
