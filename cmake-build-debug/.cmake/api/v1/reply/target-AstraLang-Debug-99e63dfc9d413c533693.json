@@ -91,7 +91,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "Parser/main.cpp",
+			"path" : "Compiler/main.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

@@ -49,11 +49,11 @@ cmake_ninja_workdir = /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-de
 
 build cmake_object_order_depends_target_AstraLang: phony || CMakeFiles/AstraLang.dir
 
-build CMakeFiles/AstraLang.dir/Parser/main.cpp.o: CXX_COMPILER__AstraLang_unscanned_Debug /Users/faisalfakih/Desktop/Coding/AstraLang/Parser/main.cpp || cmake_object_order_depends_target_AstraLang
-  DEP_FILE = CMakeFiles/AstraLang.dir/Parser/main.cpp.o.d
+build CMakeFiles/AstraLang.dir/Compiler/main.cpp.o: CXX_COMPILER__AstraLang_unscanned_Debug /Users/faisalfakih/Desktop/Coding/AstraLang/Compiler/main.cpp || cmake_object_order_depends_target_AstraLang
+  DEP_FILE = CMakeFiles/AstraLang.dir/Compiler/main.cpp.o.d
   FLAGS = -g -std=gnu++2b -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/AstraLang.dir
-  OBJECT_FILE_DIR = CMakeFiles/AstraLang.dir/Parser
+  OBJECT_FILE_DIR = CMakeFiles/AstraLang.dir/Compiler
 
 
 # =============================================================================
@@ -63,7 +63,7 @@ build CMakeFiles/AstraLang.dir/Parser/main.cpp.o: CXX_COMPILER__AstraLang_unscan
 #############################################
 # Link the executable AstraLang
 
-build AstraLang: CXX_EXECUTABLE_LINKER__AstraLang_Debug CMakeFiles/AstraLang.dir/Parser/main.cpp.o
+build AstraLang: CXX_EXECUTABLE_LINKER__AstraLang_Debug CMakeFiles/AstraLang.dir/Compiler/main.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk
   OBJECT_DIR = CMakeFiles/AstraLang.dir
   POST_BUILD = :

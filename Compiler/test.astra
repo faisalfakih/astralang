@@ -1,0 +1,24 @@
+// Comments
+/*
+Multiline comments
+*/
+
+func main() {
+    const int x = 5; // integer
+    short x = 10; // short integer
+    long x = 20; // long integer
+    float x = 5.5; // floating point number
+    double x = 5.5; // double floating point number
+    char x = 'x'; // character
+    string x = "Hello World"; // string
+    bool x = true; // boolean
+}
+
+// double equal
+
+func factorial(int n) -> long {
+    if (n === 0) {
+        return x;
+    }
+        print("hello world!");
+}
