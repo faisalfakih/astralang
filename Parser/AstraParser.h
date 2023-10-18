@@ -703,6 +703,37 @@ private:
     }
 
 
+    std::unique_ptr<FunctionDeclaration> parseConstructorOrDestructor() { // TODO: FIX ERROR WITH DESTRUCTOR (Working fine with constructors)
+        TokenType tokenType = currentToken().type;
+        if (tokenType != TokenType::TOKEN_CONSTRUCTOR && tokenType != TokenType::TOKEN_DESTRUCTOR) {
+            throw std::runtime_error("Expected 'constructor' or 'destructor' at line " + std::to_string(currentToken().line) + ".");
+        }
+        consumeToken();  // consume 'constructor' or 'destructor'
+
+        FunctionDeclaration::Kind kind = (tokenType == TokenType::TOKEN_CONSTRUCTOR) ?
+                                         FunctionDeclaration::Kind::CONSTRUCTOR :
+                                         FunctionDeclaration::Kind::DESTRUCTOR;
+
+        std::vector<std::unique_ptr<Parameter>> params;
+        if (kind == FunctionDeclaration::Kind::CONSTRUCTOR) {
+            params = parseParameters();
+        } else if (currentToken().type != TokenType::TOKEN_LBRACE) {
+            throw std::runtime_error("Expected '{' at line " + std::to_string(currentToken().line));
+        }
+        // For constructors and destructors, no return type is expected
+        std::unique_ptr<TypeRepresentation> returnType = nullptr;
+
+        std::unique_ptr<Statement> body;
+        if (checkTokenType(TokenType::TOKEN_LBRACE)) {
+            body = parseBlockStatement();
+        } else {
+            throw std::runtime_error("Expected '{' at line " + std::to_string(currentToken().line));
+        }
+
+        return std::make_unique<FunctionDeclaration>("", std::move(params), std::move(returnType), std::move(body), kind);
+    }
+
+
     // Parse Class Declarations
     std::unique_ptr<ClassDeclaration> parseClassDeclaration() {
         expect(TokenType::TOKEN_CLASS);
@@ -740,6 +771,9 @@ private:
 
         expect(TokenType::TOKEN_LBRACE);
 
+        std::unique_ptr<FunctionDeclaration> constructor = nullptr;
+        std::unique_ptr<FunctionDeclaration> destructor = nullptr;
+
         while (!checkTokenType(TokenType::TOKEN_RBRACE) && !isAtEnd()) {  // Continue until '}' or end of input
             if (checkTokenType(TokenType::TOKEN_PRIVATE)) {
                 consumeToken();
@@ -768,6 +802,10 @@ private:
                         protectedMethods.push_back(std::move(method));
                         break;
                 }
+            } else if (checkTokenType(TokenType::TOKEN_CONSTRUCTOR)) {
+                constructor = parseConstructorOrDestructor();
+            } else if (checkTokenType(TokenType::TOKEN_DESTRUCTOR)) {
+                destructor = parseConstructorOrDestructor();
             } else {
                 parseStatement();
             }
@@ -776,7 +814,11 @@ private:
         expect(TokenType::TOKEN_RBRACE);  // Consume the closing '}'
         expect(TokenType::TOKEN_SEMI_COLON);  // Consume the semicolon
 
-        return std::make_unique<ClassDeclaration>(className, baseClassName, std::move(privateMembers), std::move(publicMembers), std::move(protectedMembers), std::move(privateMethods), std::move(publicMethods), std::move(protectedMethods));
+        return std::make_unique<ClassDeclaration>(
+                className, baseClassName, std::move(privateMembers), std::move(publicMembers),
+                std::move(protectedMembers), std::move(privateMethods), std::move(publicMethods),
+                std::move(protectedMethods), std::move(constructor), std::move(destructor)
+        );
     }
 
     // Parse Function Call

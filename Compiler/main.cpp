@@ -35,6 +35,6 @@ int main() {
     auto end = std::chrono::high_resolution_clock::now();  // Record end time
 
     std::chrono::duration<double> time_taken = end - start;  // Compute the difference
-    LOG(GREEN << "Code works!\n" << BLUE << "Time taken: " << time_taken.count() * 1000000  << std::setprecision(20) << " milliseconds" << RESET);
+    LOG(GREEN << "Code works!\n" << BLUE << "Time taken: " << time_taken.count() * 1000000  << std::setprecision(20) << " microseconds" << RESET);
     return 0;
 }

@@ -15,8 +15,6 @@
 #include <sstream>
 #include <chrono>
 
-
-
 class ASTNode {
 public:
     virtual ~ASTNode() = default;
@@ -410,13 +408,20 @@ private:
 
 class FunctionDeclaration : public ModifiableDeclaration {
 public:
+    enum Kind {
+        REGULAR,
+        CONSTRUCTOR,
+        DESTRUCTOR
+    };
+
     FunctionDeclaration(std::string name,
                         std::vector<std::unique_ptr<Parameter>> params,
                         std::unique_ptr<TypeRepresentation> returnType = nullptr,
-                        std::unique_ptr<Statement> body = nullptr)
+                        std::unique_ptr<Statement> body = nullptr, Kind kind = REGULAR)
             : name(std::move(name)), params(std::move(params)), returnType(std::move(returnType)),
-              body(std::move(body)), functionScope(new Scope()) {}
+              body(std::move(body)), functionScope(new Scope()), kind(kind) {}
 
+    Kind kind;
     std::string name;
     std::vector<std::unique_ptr<Parameter>> params;
     std::unique_ptr<TypeRepresentation> returnType;
@@ -433,7 +438,9 @@ public:
                      std::vector<std::unique_ptr<MemberVariable>> protectedMembers,
                      std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods,
                      std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods,
-                     std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods)
+                     std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods,
+                     std::unique_ptr<FunctionDeclaration> constructor,
+                     std::unique_ptr<FunctionDeclaration> destructor)
             : name(std::move(name)), baseClassName(std::move(baseClassName)),
               privateMembers(std::move(privateMembers)),
               publicMembers(std::move(publicMembers)),
@@ -441,6 +448,8 @@ public:
               privateMethods(std::move(privateMethods)),
               publicMethods(std::move(publicMethods)),
               protectedMethods(std::move(protectedMethods)),
+              constructor(std::move(constructor)),
+              destructor(std::move(destructor)),
               classScope(std::make_unique<Scope>()) {}
 
     std::string name;
@@ -451,6 +460,8 @@ public:
     std::vector<std::unique_ptr<FunctionDeclaration>> privateMethods;
     std::vector<std::unique_ptr<FunctionDeclaration>> publicMethods;
     std::vector<std::unique_ptr<FunctionDeclaration>> protectedMethods;
+    std::unique_ptr<FunctionDeclaration> constructor;
+    std::unique_ptr<FunctionDeclaration> destructor;
     std::unique_ptr<Scope> classScope;
 };
 
