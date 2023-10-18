@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include "../Parser/AstraParser.h"
+#include "../SemanticAnalyzer/AstraSemanticAnalyzer.h"
 
 #define GREEN "\033[32m"
 #define RED "\033[31m"

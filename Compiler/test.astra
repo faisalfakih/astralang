@@ -1,7 +1,0 @@
-class Main {
-public:
-    destructor {
-        int i = 10;
-    }
-
-};
