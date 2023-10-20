@@ -15,9 +15,67 @@
 #include <sstream>
 #include <chrono>
 
+enum class ASTNodeType {
+    // Importing Libraries
+    Import,
+    // Expressions
+    BinaryExpression,
+    NumberLiteral,
+    CharLiteral,
+    StringLiteral,
+    BooleanLiteral,
+    Identifier,
+    FunctionCall,
+    // Types
+    BasicType,
+    ArrayType,
+    VectorType,
+    MapType,
+    PointerType,
+    ReferenceType,
+    MemberVariable,
+    CustomType,
+    // Parameter
+    Parameter,
+    // Scope
+    Scope,
+    // Modifiers & Qualifiers
+    Modifier,
+    // Statements
+    BlockStatement,
+    ExpressionStatement,
+    IfStatement,
+    WhileLoop,
+    ForEachLoop,
+    ReturnStatement,
+    BreakStatement,
+    ContinueStatement,
+    CatchBlock,
+    AssignmentExpression,
+    TryStatement,
+    FinallyStatement,
+    PrintStatement,
+    ReadStatement,
+    VariableDeclaration,
+    VariableCall,
+    FunctionDeclaration,
+    ClassDeclaration,
+    ForLoop,
+    UnaryExpression,
+    TernaryExpression,
+    PostfixExpression,
+    PrefixExpression,
+    TypeCastExpression,
+    TypeCheckExpression,
+    LogicalExpression,
+    ComparisonExpression
+};
+
+
 class ASTNode {
 public:
     virtual ~ASTNode() = default;
+    [[nodiscard]] virtual ASTNodeType getNodeType() const = 0;
 };
 
 // Importing Libraries
@@ -28,10 +86,14 @@ public:
 
     std::string libraryName;
     std::string alias;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::Import;
+    }
 };
 
 // Abstract class for all expressions
-class Expression : public ASTNode {};
+class Expression : public ASTNode {[[nodiscard]] virtual ASTNodeType getNodeType() const = 0;};
 
 // Represent arithmetic operators
 class BinaryExpression : public Expression {
@@ -50,11 +112,15 @@ public:
     Operator op;
     std::unique_ptr<Expression> left;
     std::unique_ptr<Expression> right;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::BinaryExpression;
+    }
 };
 
 
 // Represent literals
-class Literal : public Expression {};
+class Literal : public Expression {[[nodiscard]] virtual ASTNodeType getNodeType() const = 0;};
 
 // Number literals
 class NumberLiteral : public Literal {
@@ -62,6 +128,10 @@ public:
     explicit NumberLiteral(double value) : value(value) {}
 
     double value;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::NumberLiteral;
+    }
 };
 
 // Char literals
@@ -70,6 +140,9 @@ public:
     explicit CharLiteral(char value) : value(value) {}
 
     char value;
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::CharLiteral;
+    }
 };
 
 // String literals
@@ -78,6 +151,9 @@ public:
     explicit StringLiteral(std::string value) : value(std::move(value)) {}
 
     std::string value;
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::StringLiteral;
+    }
 };
 
 // Boolean literals
@@ -86,6 +162,9 @@ public:
     explicit BooleanLiteral(bool value) : value(value) {}
 
     bool value;
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::BooleanLiteral;
+    }
 };
 
 // Represent identifiers (variables)
@@ -94,6 +173,9 @@ public:
     explicit Identifier(std::string name) : name(std::move(name)) {}
 
     std::string name;
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::Identifier;
+    }
 };
 
 // Represent function calls
@@ -104,6 +186,9 @@ public:
 
     std::string name;
     std::vector<std::unique_ptr<Expression>> args;
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::FunctionCall;
+    }
 };
 
 
@@ -111,6 +196,7 @@ public:
 class TypeRepresentation {
 public:
     virtual ~TypeRepresentation() = default;
+    [[nodiscard]] virtual ASTNodeType getNodeType() const = 0;
 };
 
 class BasicType : public TypeRepresentation {
@@ -131,6 +217,9 @@ public:
     explicit BasicType(Type type) : type(type) {}
 
     Type type;
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::BasicType;
+    }
 };
 
 class ArrayType : public TypeRepresentation {
@@ -139,18 +228,56 @@ public:
             : elementType(std::move(elementType)), size(std::move(size)) {}
     std::unique_ptr<TypeRepresentation> elementType;
     std::unique_ptr<Expression> size;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ArrayType;
+    }
+};
+
+class VectorType : public TypeRepresentation {
+public:
+    VectorType(std::unique_ptr<TypeRepresentation> elementType, std::unique_ptr<Expression> size)
+            : elementType(std::move(elementType)), size(std::move(size)) {}
+    std::unique_ptr<TypeRepresentation> elementType;
+    std::unique_ptr<Expression> size;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::VectorType;
+    }
+};
+
+class MapType : public TypeRepresentation {
+public:
+    MapType(std::unique_ptr<TypeRepresentation> keyType, std::unique_ptr<TypeRepresentation> valueType, bool isOrdered = true)
+            : keyType(std::move(keyType)), valueType(std::move(valueType)), isOrdered(isOrdered) {}
+
+    bool isOrdered;
+    std::unique_ptr<TypeRepresentation> keyType;
+    std::unique_ptr<TypeRepresentation> valueType;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::MapType;
+    }
 };
 
 class PointerType : public TypeRepresentation {
 public:
     explicit PointerType(std::unique_ptr<TypeRepresentation> type) : type(std::move(type)) {}
     std::unique_ptr<TypeRepresentation> type;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::PointerType;
+    }
 };
 
 class ReferenceType : public TypeRepresentation {
 public:
     explicit ReferenceType(std::unique_ptr<TypeRepresentation> type) : type(std::move(type)) {}
     std::unique_ptr<TypeRepresentation> type;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ReferenceType;
+    }
 };
 
 class MemberVariable : public TypeRepresentation {
@@ -161,12 +288,20 @@ public:
     std::unique_ptr<TypeRepresentation> type;
     std::string name;
     std::unique_ptr<Expression> initializer;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::MemberVariable;
+    }
 };
 
 class CustomType : public TypeRepresentation {
 public:
     explicit CustomType(const std::string& typeName) : name(typeName) {}
     std::string name;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::CustomType;
+    }
 };
 
 
@@ -177,10 +312,14 @@ public:
             : name(std::move(paramName)), type(std::move(paramType)) {}
     std::string name;
     std::unique_ptr<TypeRepresentation> type;
+
+    [[nodiscard]] ASTNodeType getNodeType() const {
+        return ASTNodeType::Parameter;
+    }
 };
 
 // Declarations
-class Declaration : public ASTNode {};
+class Declaration : public ASTNode {[[nodiscard]] virtual ASTNodeType getNodeType() const = 0;};
 
 // Scope
 class Scope {
@@ -191,29 +330,42 @@ public:
         return new Scope(this);
     }
 
+    ~Scope() {
+        // You need to delete the child scopes and declarations
+        for (auto& pair : symbols) {
+            delete pair.second;
+        }
+        delete parentScope;
+    }
+
     Scope* getParentScope() const {
         return parentScope;
     }
 
-    void addSymbol(const std::string& name, std::unique_ptr<Declaration> decl) {
-        symbols[name] = std::move(decl);
+    void addSymbol(const std::string& name, Declaration* decl) {
+        symbols[name] = decl;
     }
 
     Declaration* getSymbol(const std::string& name) {
         if (symbols.find(name) != symbols.end()) {
-            return symbols[name].get();
+            return symbols[name];
         }
-        // If not in the current scope, checkTokenType in the parent scope.
+        // If not in the current scope, check in the parent scope.
         if (parentScope) {
             return parentScope->getSymbol(name);
         }
         return nullptr;  // Not found in any scope.
     }
 
+    [[nodiscard]] ASTNodeType getNodeType() const {
+        return ASTNodeType::Scope;
+    }
+
 private:
-    std::map<std::string, std::unique_ptr<Declaration>> symbols;
-    Scope* parentScope;
+    std::map<std::string, Declaration*> symbols;  // Changed from std::unique_ptr<Declaration> to raw pointer
+    Scope* parentScope;  // Changed from std::unique_ptr<Scope> to raw pointer
 };
+
 
 // Modifiers & Qualifiers
 class Modifier {
@@ -232,6 +384,10 @@ public:
         return type;
     }
 
+    [[nodiscard]] ASTNodeType getNodeType() const {
+        return ASTNodeType::Modifier;
+    }
+
 private:
     Type type;
 };
@@ -247,13 +403,17 @@ public:
         return std::find(modifiers.begin(), modifiers.end(), mod) != modifiers.end();
     }
 
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::Parameter;
+    }
+
 protected:
     std::vector<Modifier::Type> modifiers;
 };
 
 // Statements
 // Base class for statements
-class Statement : public ASTNode {};
+class Statement : public ASTNode {[[nodiscard]] virtual ASTNodeType getNodeType() const = 0;};
 
 class BlockStatement : public Statement {
 public:
@@ -262,6 +422,10 @@ public:
 
     std::vector<std::unique_ptr<Statement>> statements;
     std::unique_ptr<Scope> blockScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::BlockStatement;
+    }
 };
 
 // Expression Statement
@@ -270,6 +434,10 @@ public:
     explicit ExpressionStatement(std::unique_ptr<Expression> expr) : expr(std::move(expr)) {}
 
     std::unique_ptr<Expression> expr;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ExpressionStatement;
+    }
 };
 
 // If Statement
@@ -281,6 +449,10 @@ public:
     std::unique_ptr<Statement> trueBranch;
     std::unique_ptr<Statement> falseBranch;
     std::unique_ptr<Scope> ifScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::IfStatement;
+    }
 };
 
 // While Loop
@@ -291,6 +463,10 @@ public:
     std::unique_ptr<Expression> condition;
     std::unique_ptr<Statement> body;
     std::unique_ptr<Scope> whileScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::WhileLoop;
+    }
 };
 
 // For Each
@@ -306,6 +482,10 @@ public:
     std::unique_ptr<Expression> iterable;
     std::unique_ptr<Statement> body;
     std::unique_ptr<Scope> forEachScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ForEachLoop;
+    }
 };
 // Return Statement
 class ReturnStatement : public Statement {
@@ -314,11 +494,23 @@ public:
             : returnValue(std::move(returnValue)) {}
 
     std::unique_ptr<Expression> returnValue;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ReturnStatement;
+    }
 };
 
 // Break & Continue Statements
-class BreakStatement : public Statement {};
-class ContinueStatement : public Statement {};
+class BreakStatement : public Statement {
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::BreakStatement;
+    }
+};
+class ContinueStatement : public Statement {
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ContinueStatement;
+    }
+};
 
 // Represents a single 'catch' block
 class CatchBlock : public Statement {
@@ -329,6 +521,10 @@ public:
     std::unique_ptr<TypeRepresentation> exceptionType;
     std::string exceptionName;
     std::unique_ptr<BlockStatement> block;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::CatchBlock;
+    }
 };
 
 // Reassignment Statement
@@ -340,6 +536,10 @@ public:
 
     AssignmentOperator op;
     std::unique_ptr<Expression> left, right;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::AssignmentExpression;
+    }
 };
 
 // Try statement
@@ -351,6 +551,10 @@ public:
     std::unique_ptr<BlockStatement> tryBlock;
     std::vector<std::unique_ptr<CatchBlock>> catchBlocks;
     std::unique_ptr<BlockStatement> finallyBlock;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::TryStatement;
+    }
 };
 
 // Finally statement
@@ -360,6 +564,10 @@ public:
             : finallyBlock(std::move(finallyBlock)) {}
 
     std::unique_ptr<BlockStatement> finallyBlock;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::FinallyStatement;
+    }
 };
 
 // Print Statement
@@ -368,28 +576,33 @@ public:
     explicit PrintStatement(std::unique_ptr<Expression> valueToPrint)
             : value(std::move(valueToPrint)) {}
     std::unique_ptr<Expression> value;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::PrintStatement;
+    }
 };
 
 // Read Statement
-class ReadStatement : public Statement {
+class ReadStatement : public Expression {
 public:
-    ReadStatement(std::vector<std::unique_ptr<Statement>> declarationsToRead,
-                  std::vector<std::unique_ptr<Expression>> valuesToRead)
-            : declarations(std::move(declarationsToRead)), values(std::move(valuesToRead)) {}
-
-    std::vector<std::unique_ptr<Statement>> declarations;
-    std::vector<std::unique_ptr<Expression>> values;
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ReadStatement;
+    }
 };
 
 // Declarations
 class VariableDeclaration : public Statement {
 public:
-    VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr, bool isConst = false)
+    VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr, bool isConst = false, size_t size = 1)
             : type(std::move(type)), name(std::move(name)), value(std::move(value)), isConst(isConst) {}
     bool isConst;
     std::unique_ptr<TypeRepresentation> type;
     std::string name;
     std::unique_ptr<Expression> value;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::VariableDeclaration;
+    }
 };
 
 class VariableCall : public Statement{
@@ -400,7 +613,9 @@ public:
     // Getter for the variable name.
     const std::string& getVarName() const { return varName; }
 
-    // Other methods as needed for your application...
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::VariableCall;
+    }
 
 private:
     std::string varName;  // Name of the variable being called.
@@ -427,6 +642,10 @@ public:
     std::unique_ptr<TypeRepresentation> returnType;
     std::unique_ptr<Statement> body;
     std::unique_ptr<Scope> functionScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::FunctionDeclaration;
+    }
 };
 
 
@@ -463,6 +682,10 @@ public:
     std::unique_ptr<FunctionDeclaration> constructor;
     std::unique_ptr<FunctionDeclaration> destructor;
     std::unique_ptr<Scope> classScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ClassDeclaration;
+    }
 };
 
 
@@ -484,6 +707,10 @@ public:
     std::unique_ptr<Expression> endExpr;
     std::unique_ptr<Statement> body;
     std::unique_ptr<Scope> forScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ForLoop;
+    }
 };
 
 
@@ -501,6 +728,10 @@ public:
 
     Operator op;
     std::unique_ptr<Expression> operand;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::UnaryExpression;
+    }
 };
 
 // Ternary Expressions
@@ -510,6 +741,10 @@ public:
             : condition(std::move(condition)), trueExpr(std::move(trueExpr)), falseExpr(std::move(falseExpr)) {}
 
     std::unique_ptr<Expression> condition, trueExpr, falseExpr;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::TernaryExpression;
+    }
 };
 
 // Prefix expressions
@@ -521,6 +756,10 @@ public:
 
     Operator op;
     std::unique_ptr<Expression> operand;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::PostfixExpression;
+    }
 };
 
 class PrefixExpression : public Expression {
@@ -531,6 +770,10 @@ public:
 
     Operator op;
     std::unique_ptr<Expression> operand;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::PrefixExpression;
+    }
 };
 
 // Type Casting
@@ -541,6 +784,10 @@ public:
 
     std::unique_ptr<TypeRepresentation> targetType;
     std::unique_ptr<Expression> expr;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::TypeCastExpression;
+    }
 };
 
 class TypeCheckExpression : public Expression {
@@ -550,6 +797,10 @@ public:
 
     std::unique_ptr<Expression> expr;
     std::unique_ptr<TypeRepresentation> type;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::TypeCheckExpression;
+    }
 };
 
 // Logic Expression
@@ -565,6 +816,10 @@ public:
 
     Operator op;
     std::unique_ptr<Expression> left, right;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::LogicalExpression;
+    }
 };
 
 class ComparisonExpression : public Expression {
@@ -587,6 +842,10 @@ public:
 
     Operator op;
     std::unique_ptr<Expression> left, right;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::ComparisonExpression;
+    }
 };
 
 

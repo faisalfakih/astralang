@@ -382,3 +382,99 @@ events:
       
       
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CheckCSourceCompiles.cmake:76 (cmake_check_source_compiles)"
+      - "/opt/homebrew/opt/llvm/lib/cmake/llvm/FindFFI.cmake:44 (check_c_source_compiles)"
+      - "/opt/homebrew/opt/llvm/lib/cmake/llvm/LLVMConfig.cmake:252 (find_package)"
+      - "CMakeLists.txt:10 (find_package)"
+    checks:
+      - "Performing Test HAVE_FFI_CALL"
+    directories:
+      source: "/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-WbSswE"
+      binary: "/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-WbSswE"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/opt/llvm/lib/cmake/llvm"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
+    buildResult:
+      variable: "HAVE_FFI_CALL"
+      cached: true
+      stdout: |
+        Change Dir: /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-WbSswE
+        
+        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_95990 && [1/2] /Library/Developer/CommandLineTools/usr/bin/cc -DHAVE_FFI_CALL  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_95990.dir/src.c.o -MF CMakeFiles/cmTC_95990.dir/src.c.o.d -o CMakeFiles/cmTC_95990.dir/src.c.o -c /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-WbSswE/src.c
+        [2/2] : && /Library/Developer/CommandLineTools/usr/bin/cc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_95990.dir/src.c.o -o cmTC_95990  /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libffi.tbd && :
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CheckIncludeFile.cmake:95 (try_compile)"
+      - "/opt/homebrew/opt/llvm/lib/cmake/llvm/FindLibEdit.cmake:28 (check_include_file)"
+      - "/opt/homebrew/opt/llvm/lib/cmake/llvm/LLVMConfig.cmake:259 (find_package)"
+      - "CMakeLists.txt:10 (find_package)"
+    checks:
+      - "Looking for histedit.h"
+    directories:
+      source: "/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-zvZqHh"
+      binary: "/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-zvZqHh"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/opt/llvm/lib/cmake/llvm"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
+    buildResult:
+      variable: "HAVE_HISTEDIT_H"
+      cached: true
+      stdout: |
+        Change Dir: /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-zvZqHh
+        
+        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_87f10 && [1/2] /Library/Developer/CommandLineTools/usr/bin/cc   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_87f10.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_87f10.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_87f10.dir/CheckIncludeFile.c.o -c /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-zvZqHh/CheckIncludeFile.c
+        [2/2] : && /Library/Developer/CommandLineTools/usr/bin/cc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_87f10.dir/CheckIncludeFile.c.o -o cmTC_87f10  /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libedit.tbd && :
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CheckCSourceCompiles.cmake:76 (cmake_check_source_compiles)"
+      - "/opt/homebrew/opt/llvm/lib/cmake/llvm/FindTerminfo.cmake:21 (check_c_source_compiles)"
+      - "/opt/homebrew/opt/llvm/lib/cmake/llvm/LLVMConfig.cmake:264 (find_package)"
+      - "CMakeLists.txt:10 (find_package)"
+    checks:
+      - "Performing Test Terminfo_LINKABLE"
+    directories:
+      source: "/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-38fOlW"
+      binary: "/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-38fOlW"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/opt/homebrew/opt/llvm/lib/cmake/llvm"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk"
+    buildResult:
+      variable: "Terminfo_LINKABLE"
+      cached: true
+      stdout: |
+        Change Dir: /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-38fOlW
+        
+        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_ebb1c && [1/2] /Library/Developer/CommandLineTools/usr/bin/cc -DTerminfo_LINKABLE  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_ebb1c.dir/src.c.o -MF CMakeFiles/cmTC_ebb1c.dir/src.c.o.d -o CMakeFiles/cmTC_ebb1c.dir/src.c.o -c /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-38fOlW/src.c
+        [2/2] : && /Library/Developer/CommandLineTools/usr/bin/cc -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_ebb1c.dir/src.c.o -o cmTC_ebb1c  /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libcurses.tbd && :
+        
+      exitCode: 0
+...

@@ -202,6 +202,9 @@ private:
     }
 
     std::unique_ptr<Expression> parsePrimaryExpression() {
+        if (peek().type == TokenType::TOKEN_READ) {
+            return parseReadExpression();
+        }
         if (peek().type == TokenType::TOKEN_NUMBER) {
             consumeToken();
             try {
@@ -249,8 +252,6 @@ private:
                 return parseWhileLoop();
             case TokenType::TOKEN_FOR:
                 return parseForLoop();
-            case TokenType::TOKEN_READ:
-                return parseReadStatement();
             case TokenType::TOKEN_PRINT:
                 return parsePrintStatement();
             case TokenType::TOKEN_IMPORT:
@@ -565,6 +566,9 @@ private:
             case TokenType::TOKEN_BOOL_TYPE:
             case TokenType::TOKEN_VOID_TYPE:
             case TokenType::TOKEN_VAR:
+            case TokenType::TOKEN_VECTOR:
+            case TokenType::TOKEN_UNORDERED_MAP:
+            case TokenType::TOKEN_MAP:
                 return true;
             default:
                 return false;
@@ -572,33 +576,13 @@ private:
     }
 
 
-    std::unique_ptr<Statement> parseReadStatement() {
+    std::unique_ptr<Expression> parseReadExpression() {
         expect(TokenType::TOKEN_READ);
         expect(TokenType::TOKEN_LPAREN);
-        std::vector<std::unique_ptr<Statement>> declarations;
-        std::vector<std::unique_ptr<Expression>> expressions;
-
-        while (!checkTokenType(TokenType::TOKEN_RPAREN)) {
-            // If it starts with a type, it's a variable declaration
-            if (isTypeName(currentToken().type) || checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
-                std::unique_ptr<Statement> declaration = parseVariableDeclarationOrCall();
-                declarations.push_back(std::move(declaration));
-            } else {
-                std::unique_ptr<Expression> value = parseExpression();
-                expressions.push_back(std::move(value));
-            }
-            if (checkTokenType(TokenType::TOKEN_COMMA)) {
-                consumeToken();  // Consume the comma token.
-            } else if (!checkTokenType(TokenType::TOKEN_RPAREN)) {
-                throw std::runtime_error("Expected ',' or ')' at line " + std::to_string(currentToken().line));
-            }
-        }
-
         expect(TokenType::TOKEN_RPAREN);
-        expect(TokenType::TOKEN_SEMI_COLON);
 
-        // Here, you'll want to merge your `declarations` and `expressions` into the final ReadStatement.
-        return std::make_unique<ReadStatement>(std::move(declarations), std::move(expressions));
+        // Create a new ReadExpression instance.
+        return std::make_unique<ReadStatement>();
     }
 
     std::unique_ptr<VariableCall> parseVariableCall() {
@@ -614,7 +598,7 @@ private:
         return std::make_unique<VariableCall>(varName);
     }
 
-    std::unique_ptr<VariableDeclaration> parseVariableDeclaration() {
+    std::unique_ptr<VariableDeclaration> parseVariableDeclaration(bool withinParameter = false) {
         std::unique_ptr<TypeRepresentation> type;
         bool isConst = false;
 
@@ -626,9 +610,7 @@ private:
         // First, try to parse known types.
         if (isTypeName(currentToken().type)) {
             type = parseType();
-        }
-            // Check if it's an identifier (possible custom type).
-        else if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
+        } else if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
             // The identifier itself is the custom type name.
             type = std::make_unique<CustomType>(currentToken().lexeme);
             consumeToken();  // Move past the custom type name.
@@ -641,49 +623,45 @@ private:
             throw std::runtime_error("Expected a type for variable declaration. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
         }
 
-        std::string varName = currentToken().lexeme;  // This is now the variable name.
+        std::string varName;
+        if (currentToken().type == TokenType::TOKEN_VECTOR) {
+            consumeToken();
+            expect(TokenType::TOKEN_LESS);
+            std::unique_ptr<TypeRepresentation> vectorType = parseType();
+            expect(TokenType::TOKEN_GREATER);
+        } else if (currentToken().type == TokenType::TOKEN_MAP || currentToken().type == TokenType::TOKEN_UNORDERED_MAP) {
+            consumeToken();
+            expect(TokenType::TOKEN_LESS);
+            std::unique_ptr<TypeRepresentation> keyType = parseType();
+            expect(TokenType::TOKEN_COMMA);
+            std::unique_ptr<TypeRepresentation> valueType = parseType();
+            expect(TokenType::TOKEN_GREATER);
+        }
+
+        varName = currentToken().lexeme;  // This is now the variable name.
         consumeToken();  // Move past the variable name.
+
+        if (currentToken().type == TokenType::TOKEN_LSQUARE) {
+            consumeToken();
+            consumeToken();
+            expect(TokenType::TOKEN_RSQUARE);
+        }
 
         std::unique_ptr<Expression> initValue = nullptr;
         if (match(TokenType::TOKEN_EQUAL)) {
             initValue = parseExpression();
         }
 
-        expect(TokenType::TOKEN_SEMI_COLON);
+        if (!withinParameter) {
+            expect(TokenType::TOKEN_SEMI_COLON); // Expect a semicolon only if it's not a parameter
+        }
+
 
         return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue), isConst);
     }
 
     std::unique_ptr<VariableDeclaration> parseVariableDeclarationWithinParameter() {
-        std::unique_ptr<TypeRepresentation> type;
-
-        // First, try to parse known types.
-        if (isTypeName(currentToken().type)) {
-            type = parseType();
-        }
-            // Check if it's an identifier (possible custom type).
-        else if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
-            // The identifier itself is the custom type name.
-            type = std::make_unique<CustomType>(currentToken().lexeme);
-            consumeToken();  // Move past the custom type name.
-
-            // Now, check the next token for the variable name.
-            if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
-                throw std::runtime_error("Expected variable name after type. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
-            }
-        } else {
-            throw std::runtime_error("Expected a type for variable declaration. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
-        }
-
-        std::string varName = currentToken().lexeme;  // This is now the variable name.
-        consumeToken();  // Move past the variable name.
-
-        std::unique_ptr<Expression> initValue = nullptr;
-        if (match(TokenType::TOKEN_EQUAL)) {
-            initValue = parseExpression();
-        }
-
-        return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue));
+        parseVariableDeclaration(true);
     }
 
     // Parse Variable Declaration or Reassignment
@@ -703,7 +681,7 @@ private:
     }
 
 
-    std::unique_ptr<FunctionDeclaration> parseConstructorOrDestructor() { // TODO: FIX ERROR WITH DESTRUCTOR (Working fine with constructors)
+    std::unique_ptr<FunctionDeclaration> parseConstructorOrDestructor() {
         TokenType tokenType = currentToken().type;
         if (tokenType != TokenType::TOKEN_CONSTRUCTOR && tokenType != TokenType::TOKEN_DESTRUCTOR) {
             throw std::runtime_error("Expected 'constructor' or 'destructor' at line " + std::to_string(currentToken().line) + ".");
@@ -731,11 +709,11 @@ private:
         }
 
         return std::make_unique<FunctionDeclaration>("", std::move(params), std::move(returnType), std::move(body), kind);
-    }
+    } // TODO: ADD FUNCTIONALLITY FOR KEYWORD `this`
 
 
     // Parse Class Declarations
-    std::unique_ptr<ClassDeclaration> parseClassDeclaration() {
+    std::unique_ptr<ClassDeclaration> parseClassDeclaration() { // TODO: ADD THIS
         expect(TokenType::TOKEN_CLASS);
         if (!checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
             throw std::runtime_error("Expected a class name after 'class' at line " + std::to_string(currentToken().line) + ".");
@@ -1002,6 +980,9 @@ public:
             case TokenType::TOKEN_CHAR_TYPE:
             case TokenType::TOKEN_VOID_TYPE:
             case TokenType::TOKEN_VAR:
+            case TokenType::TOKEN_VECTOR:
+            case TokenType::TOKEN_UNORDERED_MAP:
+            case TokenType::TOKEN_MAP:
             case TokenType::TOKEN_CONST:
                 return parseVariableDeclaration();
             case TokenType::TOKEN_IF:
@@ -1036,7 +1017,7 @@ public:
             case TokenType::TOKEN_PRINT:
                 return parsePrintStatement();
             case TokenType::TOKEN_READ:
-                return parseReadStatement();
+                return parseReadExpression();
             case TokenType::TOKEN_NEWLINE:
                 consumeToken();  // consume newline if it's there
                 break;

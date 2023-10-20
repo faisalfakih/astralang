@@ -1,4 +1,16 @@
 /Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja -S /Users/faisalfakih/Desktop/Coding/AstraLang -B /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug
--- Configuring done (0.1s)
+-- Performing Test HAVE_FFI_CALL
+-- Performing Test HAVE_FFI_CALL - Success
+-- Found FFI: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libffi.tbd  
+-- Looking for histedit.h
+-- Looking for histedit.h - found
+-- Found LibEdit: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/include (found version "2.11") 
+-- Performing Test Terminfo_LINKABLE
+-- Performing Test Terminfo_LINKABLE - Success
+-- Found Terminfo: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libcurses.tbd  
+-- Found ZLIB: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libz.tbd (found version "1.2.11")  
+-- Found zstd: /opt/homebrew/lib/libzstd.dylib  
+-- Found LibXml2: /Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk/usr/lib/libxml2.tbd (found version "2.9.4") 
+-- Configuring done (1.1s)
 -- Generating done (0.0s)
 -- Build files have been written to: /Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug

@@ -32,6 +32,8 @@ int main() {
     std::ios_base::sync_with_stdio(false);
     Parser* parser = new Parser(Lexer(input));
     std::vector<std::unique_ptr<ASTNode>> parseTree = parser->parse();
+    SemanticAnalyzer* semanticAnalyzer = new SemanticAnalyzer();
+    semanticAnalyzer->analyze(parseTree);
     delete parser;
     auto end = std::chrono::high_resolution_clock::now();  // Record end time
 
