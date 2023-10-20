@@ -84,7 +84,7 @@ private:
 
     llvm::Type* convertToLLVMType(const TypeRepresentation* typeRep) {
         if (const BasicType* basicType = dynamic_cast<const BasicType*>(typeRep)) {
-            switch (basicType->type) {
+            switch (basicType->type) { // Basic type variables
                 case BasicType::Type::INT:
                     return llvm::Type::getInt32Ty(*context);
                 case BasicType::Type::LONG:
