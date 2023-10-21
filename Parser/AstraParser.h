@@ -76,16 +76,35 @@ private:
                 { TokenType::TOKEN_STRING_TYPE, BasicType::STRING },
                 { TokenType::TOKEN_BOOL_TYPE, BasicType::BOOL },
                 { TokenType::TOKEN_VOID_TYPE, BasicType::VOID },
-                { TokenType::TOKEN_VAR, BasicType::VAR }
+                { TokenType::TOKEN_VAR, BasicType::VAR },
         };
 
         for (const auto& [tokenType, basicType] : typeMap) {
-            if (match(tokenType)) {
+            if (match(tokenType) || match(TokenType::TOKEN_VECTOR) || match(TokenType::TOKEN_UNORDERED_MAP) || match(TokenType::TOKEN_MAP)) {
                 if (match(TokenType::TOKEN_ASTERISK)) {
                     return std::make_unique<PointerType>(std::make_unique<BasicType>(basicType));
                 } else if (match(TokenType::TOKEN_AMPERSAND)) {
                     return std::make_unique<ReferenceType>(std::make_unique<BasicType>(basicType));
+                } else if (match(TokenType::TOKEN_LSQUARE)) {
+                    size_t size = std::stoul(currentToken().lexeme);
+                    consumeToken();
+                    expect(TokenType::TOKEN_RSQUARE);
+                    return std::make_unique<ArrayType>(std::make_unique<BasicType>(basicType), size);
+                } else if (match(TokenType::TOKEN_LESS)) {
+                    if (peek(-2).type == TokenType::TOKEN_VECTOR) {
+                        std::unique_ptr<TypeRepresentation> vectorType = parseType();
+                        expect(TokenType::TOKEN_GREATER);
+                        return std::make_unique<VectorType>(std::make_unique<BasicType>(basicType), 0);
+                    } else if (peek(-2).type == TokenType::TOKEN_MAP || peek(-2).type == TokenType::TOKEN_UNORDERED_MAP) {
+                        bool ordered = peek(-2).type == TokenType::TOKEN_MAP; // True if it's an ordered map
+                        std::unique_ptr<TypeRepresentation> keyType = parseType();
+                        expect(TokenType::TOKEN_COMMA);
+                        std::unique_ptr<TypeRepresentation> valueType = parseType();
+                        expect(TokenType::TOKEN_GREATER);
+                        return std::make_unique<MapType>(std::make_unique<BasicType>(basicType), std::make_unique<BasicType>(basicType), true);
+                    }
                 }
+
                 return std::make_unique<BasicType>(basicType);
             } else if (checkTokenType(TokenType::TOKEN_IDENTIFIER)) {
                 consumeToken();
@@ -623,29 +642,12 @@ private:
             throw std::runtime_error("Expected a type for variable declaration. Line: " + std::to_string(currentToken().line) + ", Column: " + std::to_string(currentToken().column));
         }
 
+        size_t size = 0;
         std::string varName;
-        if (currentToken().type == TokenType::TOKEN_VECTOR) {
-            consumeToken();
-            expect(TokenType::TOKEN_LESS);
-            std::unique_ptr<TypeRepresentation> vectorType = parseType();
-            expect(TokenType::TOKEN_GREATER);
-        } else if (currentToken().type == TokenType::TOKEN_MAP || currentToken().type == TokenType::TOKEN_UNORDERED_MAP) {
-            consumeToken();
-            expect(TokenType::TOKEN_LESS);
-            std::unique_ptr<TypeRepresentation> keyType = parseType();
-            expect(TokenType::TOKEN_COMMA);
-            std::unique_ptr<TypeRepresentation> valueType = parseType();
-            expect(TokenType::TOKEN_GREATER);
-        }
 
         varName = currentToken().lexeme;  // This is now the variable name.
         consumeToken();  // Move past the variable name.
 
-        if (currentToken().type == TokenType::TOKEN_LSQUARE) {
-            consumeToken();
-            consumeToken();
-            expect(TokenType::TOKEN_RSQUARE);
-        }
 
         std::unique_ptr<Expression> initValue = nullptr;
         if (match(TokenType::TOKEN_EQUAL)) {
@@ -657,7 +659,7 @@ private:
         }
 
 
-        return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue), isConst);
+        return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue), isConst, size);
     }
 
     std::unique_ptr<VariableDeclaration> parseVariableDeclarationWithinParameter() {

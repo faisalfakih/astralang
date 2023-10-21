@@ -7,13 +7,8 @@
 
 #include <string>
 #include <memory>
-#include <variant>
-#include <vector>
 #include <map>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <chrono>
+#include <cmath>
 
 enum class ASTNodeType {
     // Importing Libraries
@@ -93,7 +88,10 @@ public:
 };
 
 // Abstract class for all expressions
-class Expression : public ASTNode {[[nodiscard]] virtual ASTNodeType getNodeType() const = 0;};
+class Expression : public ASTNode {
+public:
+    [[nodiscard]] virtual ASTNodeType getNodeType() const = 0;
+};
 
 // Represent arithmetic operators
 class BinaryExpression : public Expression {
@@ -119,15 +117,24 @@ public:
 };
 
 
-// Represent literals
-class Literal : public Expression {[[nodiscard]] virtual ASTNodeType getNodeType() const = 0;};
-
 // Number literals
-class NumberLiteral : public Literal {
+class NumberLiteral : public Expression {
 public:
     explicit NumberLiteral(double value) : value(value) {}
 
     double value;
+
+    bool isDecimal() const {
+        return std::fmod(value, 1.0) != 0.0;
+    }
+
+    int getIntValue() const {
+        return static_cast<int>(value);
+    }
+
+    float getFloatValue() const {
+        return static_cast<float>(value);
+    }
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::NumberLiteral;
@@ -135,7 +142,7 @@ public:
 };
 
 // Char literals
-class CharLiteral : public Literal {
+class CharLiteral : public Expression {
 public:
     explicit CharLiteral(char value) : value(value) {}
 
@@ -146,7 +153,7 @@ public:
 };
 
 // String literals
-class StringLiteral : public Literal {
+class StringLiteral : public Expression {
 public:
     explicit StringLiteral(std::string value) : value(std::move(value)) {}
 
@@ -157,7 +164,7 @@ public:
 };
 
 // Boolean literals
-class BooleanLiteral : public Literal {
+class BooleanLiteral : public Expression {
 public:
     explicit BooleanLiteral(bool value) : value(value) {}
 
@@ -224,10 +231,10 @@ public:
 
 class ArrayType : public TypeRepresentation {
 public:
-    ArrayType(std::unique_ptr<TypeRepresentation> elementType, std::unique_ptr<Expression> size)
+    ArrayType(std::unique_ptr<TypeRepresentation> elementType, size_t size)
             : elementType(std::move(elementType)), size(std::move(size)) {}
     std::unique_ptr<TypeRepresentation> elementType;
-    std::unique_ptr<Expression> size;
+    size_t size;
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::ArrayType;
@@ -236,10 +243,10 @@ public:
 
 class VectorType : public TypeRepresentation {
 public:
-    VectorType(std::unique_ptr<TypeRepresentation> elementType, std::unique_ptr<Expression> size)
-            : elementType(std::move(elementType)), size(std::move(size)) {}
+    VectorType(std::unique_ptr<TypeRepresentation> elementType, size_t size)
+    : elementType(std::move(elementType)), size(std::move(size)) {}
     std::unique_ptr<TypeRepresentation> elementType;
-    std::unique_ptr<Expression> size;
+    size_t size;
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::VectorType;
@@ -248,10 +255,10 @@ public:
 
 class MapType : public TypeRepresentation {
 public:
-    MapType(std::unique_ptr<TypeRepresentation> keyType, std::unique_ptr<TypeRepresentation> valueType, bool isOrdered = true)
-            : keyType(std::move(keyType)), valueType(std::move(valueType)), isOrdered(isOrdered) {}
+    MapType(std::unique_ptr<TypeRepresentation> keyType, std::unique_ptr<TypeRepresentation> valueType, bool ordered = true)
+            : keyType(std::move(keyType)), valueType(std::move(valueType)), ordered(ordered) {}
 
-    bool isOrdered;
+    bool ordered;
     std::unique_ptr<TypeRepresentation> keyType;
     std::unique_ptr<TypeRepresentation> valueType;
 
@@ -593,8 +600,9 @@ public:
 // Declarations
 class VariableDeclaration : public Statement {
 public:
-    VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr, bool isConst = false, size_t size = 1)
-            : type(std::move(type)), name(std::move(name)), value(std::move(value)), isConst(isConst) {}
+    VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr, bool isConst = false, size_t size = 0)
+            : type(std::move(type)), name(std::move(name)), value(std::move(value)), isConst(isConst), size(size) {}
+    size_t size;
     bool isConst;
     std::unique_ptr<TypeRepresentation> type;
     std::string name;

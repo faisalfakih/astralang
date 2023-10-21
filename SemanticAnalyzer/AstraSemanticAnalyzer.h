@@ -5,13 +5,14 @@
 #ifndef ASTRALANG_ASTRASEMANTICANALYZER_H
 #define ASTRALANG_ASTRASEMANTICANALYZER_H
 
-#include "../Parser/AstraParser.h"
 #include "../AST/AstraAST.h"
 #include <unordered_map>
 #include <memory>
+#include <vector>
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/Support/raw_ostream.h"
 
 
@@ -26,7 +27,7 @@ public:
               currentScope(new Scope) {}
 
     void analyze(const std::vector<std::unique_ptr<ASTNode>>& parseTree) {
-        for (const auto& node : parseTree) {
+        for (const std::unique_ptr<ASTNode>& node : parseTree) {
             analyzeNode(node.get());
         }
     }
@@ -53,7 +54,7 @@ private:
     void analyzeNode(const ASTNode* node) {
         switch (node->getNodeType()) {
             case ASTNodeType::VariableDeclaration: {
-                auto varDecl = dynamic_cast<const VariableDeclaration*>(node);
+                const VariableDeclaration* varDecl = dynamic_cast<const VariableDeclaration*>(node);
                 declareVariable(varDecl);
                 break;
             }
@@ -63,10 +64,12 @@ private:
     }
 
     void declareVariable(const VariableDeclaration* varDecl) {
-        llvm::Type* type = convertToLLVMType(varDecl->type.get());
+        llvm::Type* type = convertToLLVMType(varDecl->type.get(), varDecl);
+
         if (symbolTable.find(varDecl->name) != symbolTable.end()) {
             throw std::runtime_error("Variable '" + varDecl->name + "' has already been declared within a parent scope or its current scope!");
         }
+        checkAssignment(varDecl, varDecl->value.get());
 
         llvm::Function* function = llvm::Function::Create(
                 llvm::FunctionType::get(llvm::Type::getVoidTy(*context), false),
@@ -78,11 +81,38 @@ private:
         builder->SetInsertPoint(basicBlock);
 
         llvm::AllocaInst* alloca = builder->CreateAlloca(type, nullptr, varDecl->name.c_str()); // Allocates the variable on the stack
+        if (varDecl->value) {  // If the value is not equal to nullptr
+            const NumberLiteral* numberLiteral = dynamic_cast<const NumberLiteral*>(varDecl->value.get());
+            if (numberLiteral) {  // Ensure the cast succeeded and the value is a NumberLiteral
+                llvm::Type* rhsType = determineExpressionType(numberLiteral, type); // Determine the type of it
+                llvm::Constant* value = nullptr;  // Initialize value to nullptr
+                bool isValueInitialized = false;  // Add a flag to track initialization
+
+                if (rhsType->isIntegerTy()) {
+                    value = llvm::ConstantInt::get(*context, llvm::APInt(getBitWidth(rhsType), numberLiteral->getIntValue(), true));
+                    isValueInitialized = true;  // Set flag to true upon initialization
+                } else if (rhsType->isFloatTy() || rhsType->isDoubleTy()) {
+                    value = llvm::ConstantFP::get(*context, llvm::APFloat(numberLiteral->getFloatValue()));
+                    isValueInitialized = true;  // Set flag to true upon initialization
+                }
+                // TODO: ... handle other types ...
+
+                if (isValueInitialized) {  // Check flag before calling CreateStore
+                    builder->CreateStore(value, alloca);  // Stores the value in the variable
+                } else {
+                    throw std::runtime_error("Value not initialized for variable '" + varDecl->name + "'");
+                }
+            }
+        } else {
+            // If varDecl->value is nullptr and you want to ensure a non-null value on the stack, you can do this:
+            llvm::Constant* defaultValue = llvm::Constant::getNullValue(type);  // Assuming type is the LLVM type of the variable
+            builder->CreateStore(defaultValue, alloca);
+        }
         symbolTable[varDecl->name] = alloca; // Adds the variable to the symbolTable hashmap
-    }
+    } // TODO: FIX ERROR: Declared variables are set as null on the stack
 
 
-    llvm::Type* convertToLLVMType(const TypeRepresentation* typeRep) {
+    llvm::Type* convertToLLVMType(const TypeRepresentation* typeRep, const VariableDeclaration* varDecl) {
         if (const BasicType* basicType = dynamic_cast<const BasicType*>(typeRep)) {
             switch (basicType->type) { // Basic type variables
                 case BasicType::Type::INT:
@@ -90,7 +120,7 @@ private:
                 case BasicType::Type::LONG:
                     return llvm::Type::getInt64Ty(*context);
                 case BasicType::Type::SHORT:
-                    return llvm::Type::getInt8Ty(*context);
+                    return llvm::Type::getInt16Ty(*context);
                 case BasicType::Type::FLOAT:
                     return llvm::Type::getFloatTy(*context);
                 case BasicType::Type::DOUBLE:
@@ -104,8 +134,68 @@ private:
                 default:
                     throw std::runtime_error("Incorrect type");
             }
-        }
+        } else if (const ArrayType* arrayType = dynamic_cast<const ArrayType*>(typeRep)) {
+            llvm::Type* elementType = convertToLLVMType(arrayType->elementType.get(), varDecl);
+            return llvm::ArrayType::get(elementType, varDecl->size);
+        } // TODO: add support for vector types and hashmap types (map and unordered_map)
         throw std::runtime_error("Incorrect type");
+    }
+
+
+    // Variable Declaration
+    void checkAssignment(const VariableDeclaration* varDecl, const Expression* rhs) {
+        // Convert lhs and rhs types to LLVM types
+        llvm::Type* lhsType = convertToLLVMType(varDecl->type.get(), varDecl);
+        llvm::Type* rhsType = determineExpressionType(rhs, lhsType);
+
+        // Compare the LLVM type representations
+        if (!compareDataTypes(lhsType, rhsType)) {
+            throw std::runtime_error("Type mismatch in assignment of variable " + varDecl->name );
+        }
+    }
+
+    bool compareDataTypes(llvm::Type* type1, llvm::Type* type2) {
+        return (type1->isIntegerTy() && type2->isIntegerTy()) ||
+               (type1->isPointerTy() && type2->isPointerTy()) ||
+               (type1->isVoidTy() && type2->isVoidTy()) ||
+               (type1->isFloatTy() && type2->isFloatTy()) ||
+               (type1->isDoubleTy() && type2->isDoubleTy()) ||
+               (type1->isArrayTy() && type2->isArrayTy()); // TODO: Add more types
+    }
+
+    unsigned getBitWidth(llvm::Type* type) {
+        return module->getDataLayout().getTypeSizeInBits(type); // <-- Retrieve DataLayout from within the module then get its size in bits
+    }
+
+    llvm::Type* determineExpressionType(const Expression* expression, llvm::Type* lhsType) {
+        switch (expression->getNodeType()) {
+            case ASTNodeType::NumberLiteral: {
+                const NumberLiteral* numberLiteral = dynamic_cast<const NumberLiteral*>(expression);
+                if (numberLiteral->isDecimal()) { // It's a decimal number
+                    switch (getBitWidth(lhsType)) {
+                        case 32:
+                            return llvm::Type::getFloatTy(*context);
+                        case 64:
+                            return llvm::Type::getDoubleTy(*context);
+                        default:
+                            throw std::runtime_error("Unsupported bit width for float: " + std::to_string(getBitWidth(lhsType)));
+                    }
+                } else { // It's an integer
+                    switch (getBitWidth(lhsType)) {
+                        case 16:
+                            return llvm::Type::getInt16Ty(*context);
+                        case 32:
+                            return llvm::Type::getInt32Ty(*context);
+                        case 64:
+                            return llvm::Type::getInt64Ty(*context);
+                        default:
+                            throw std::runtime_error("Unsupported bit width for integer: " + std::to_string(getBitWidth(lhsType)));
+                    }
+                }
+            }
+            default:
+                throw std::runtime_error("Unsupported node type in determineExpressionType");
+        }
     }
 };
 
