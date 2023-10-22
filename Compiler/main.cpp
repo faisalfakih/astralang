@@ -34,6 +34,7 @@ int main() {
     std::vector<std::unique_ptr<ASTNode>> parseTree = parser->parse();
     SemanticAnalyzer* semanticAnalyzer = new SemanticAnalyzer();
     semanticAnalyzer->analyze(parseTree);
+    semanticAnalyzer->printIR();
     delete parser;
     auto end = std::chrono::high_resolution_clock::now();  // Record end time
 

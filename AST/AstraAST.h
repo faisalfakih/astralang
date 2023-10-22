@@ -632,6 +632,7 @@ private:
 class FunctionDeclaration : public ModifiableDeclaration {
 public:
     enum Kind {
+        MAIN,
         REGULAR,
         CONSTRUCTOR,
         DESTRUCTOR
@@ -650,6 +651,19 @@ public:
     std::unique_ptr<TypeRepresentation> returnType;
     std::unique_ptr<Statement> body;
     std::unique_ptr<Scope> functionScope;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::FunctionDeclaration;
+    }
+};
+
+class MainFunction : public ModifiableDeclaration {
+public:
+    MainFunction(std::unique_ptr<Statement> body)
+            : body(std::move(body)), mainScope(new Scope()) {}
+
+    std::unique_ptr<Statement> body;
+    std::unique_ptr<Scope> mainScope;
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::FunctionDeclaration;

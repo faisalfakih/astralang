@@ -540,8 +540,13 @@ private:
         if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
             throw std::runtime_error("Expected a function name after 'func' at line " + std::to_string(currentToken().line) + ".");
         }
+        FunctionDeclaration::Kind kind = FunctionDeclaration::Kind::REGULAR;
 
         std::string functionName = currentToken().lexeme;
+        if (functionName == "main") {
+            kind = FunctionDeclaration::Kind::MAIN;
+        }
+
         consumeToken();
 
         std::vector<std::unique_ptr<Parameter>> params = parseParameters();
@@ -569,7 +574,7 @@ private:
             throw std::runtime_error("Expected statement, new line or open bracket at line " + std::to_string(currentToken().line));
         }
 
-        return std::make_unique<FunctionDeclaration>(functionName, std::move(params), std::move(returnType), std::move(body));
+        return std::make_unique<FunctionDeclaration>(functionName, std::move(params), std::move(returnType), std::move(body), kind);
     }
 
     // Parse Variable Declarations

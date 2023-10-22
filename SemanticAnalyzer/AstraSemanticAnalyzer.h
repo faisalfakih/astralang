@@ -29,14 +29,19 @@ public:
     void analyze(const std::vector<std::unique_ptr<ASTNode>>& parseTree) {
         for (const std::unique_ptr<ASTNode>& node : parseTree) {
             analyzeNode(node.get());
-        }
+        } // TODO: Add checks for a main function
+    }
+
+    void printIR() {
+        module->print(llvm::errs(), nullptr);
     }
 private:
+    bool hasMainFunction = false;
     std::unique_ptr<llvm::LLVMContext> context; // This is a container for all the LLVM IR
     std::unique_ptr<llvm::Module> module; // This is a container for all the LLVM IR
     std::unique_ptr<llvm::IRBuilder<>> builder; // This is a builder for LLVM IR
     std::unordered_map<std::string, llvm::Value*> namedValues;
-    std::unordered_map<std::string, llvm::AllocaInst*> symbolTable;
+    std::unordered_map<std::string, llvm::Value*> symbolTable;
     Scope* currentScope;
 
     void enterNewScope() {
@@ -80,36 +85,69 @@ private:
         llvm::BasicBlock* basicBlock = llvm::BasicBlock::Create(*context, "entry", function);
         builder->SetInsertPoint(basicBlock);
 
-        llvm::AllocaInst* alloca = builder->CreateAlloca(type, nullptr, varDecl->name.c_str()); // Allocates the variable on the stack
-        if (varDecl->value) {  // If the value is not equal to nullptr
+        if (varDecl->isConst) {  // Check if it's a constant
+            if (varDecl->value == nullptr) {
+                throw std::runtime_error("Constant '" + varDecl->name + "' must be initialized!");
+            }
             const NumberLiteral* numberLiteral = dynamic_cast<const NumberLiteral*>(varDecl->value.get());
-            if (numberLiteral) {  // Ensure the cast succeeded and the value is a NumberLiteral
+            if (!numberLiteral) {
+                throw std::runtime_error("Value for constant variable '" + varDecl->name + "' must be a literal value!");
+            }
+
+            llvm::Type* rhsType = determineExpressionType(numberLiteral, type); // Determine the type of it
+            llvm::Constant* value = nullptr;  // Initialize value to nullptr
+
+            if (rhsType->isIntegerTy()) {
+                value = llvm::ConstantInt::get(*context, llvm::APInt(getBitWidth(rhsType), numberLiteral->getIntValue(), true));
+            } else if (rhsType->isFloatTy() || rhsType->isDoubleTy()) {
+                value = llvm::ConstantFP::get(*context, llvm::APFloat(numberLiteral->getFloatValue()));
+            } else {
+                throw std::runtime_error("Unsupported type for constant variable '" + varDecl->name + "'");
+            }
+
+            // Create a global constant variable
+            llvm::GlobalVariable* globalVar = new llvm::GlobalVariable(
+                    *module,
+                    type,
+                    true,  // isConstant
+                    llvm::GlobalValue::InternalLinkage,
+                    value,  // Initializer
+                    varDecl->name
+            );
+
+            // Add the global variable to the symbolTable
+            symbolTable[varDecl->name] = globalVar;
+
+        } else {  // Handle non-constant variables
+            llvm::AllocaInst* alloca = builder->CreateAlloca(type, nullptr, varDecl->name.c_str()); // Allocates the variable on the stack
+
+            if (varDecl->value) {
+                const NumberLiteral* numberLiteral = dynamic_cast<const NumberLiteral*>(varDecl->value.get());
+                if (!numberLiteral) {
+                    throw std::runtime_error("Value for variable '" + varDecl->name + "' must be a literal value!");
+                }
+
                 llvm::Type* rhsType = determineExpressionType(numberLiteral, type); // Determine the type of it
                 llvm::Constant* value = nullptr;  // Initialize value to nullptr
-                bool isValueInitialized = false;  // Add a flag to track initialization
 
                 if (rhsType->isIntegerTy()) {
                     value = llvm::ConstantInt::get(*context, llvm::APInt(getBitWidth(rhsType), numberLiteral->getIntValue(), true));
-                    isValueInitialized = true;  // Set flag to true upon initialization
                 } else if (rhsType->isFloatTy() || rhsType->isDoubleTy()) {
                     value = llvm::ConstantFP::get(*context, llvm::APFloat(numberLiteral->getFloatValue()));
-                    isValueInitialized = true;  // Set flag to true upon initialization
-                }
-                // TODO: ... handle other types ...
-
-                if (isValueInitialized) {  // Check flag before calling CreateStore
-                    builder->CreateStore(value, alloca);  // Stores the value in the variable
                 } else {
-                    throw std::runtime_error("Value not initialized for variable '" + varDecl->name + "'");
+                    throw std::runtime_error("Unsupported type for variable '" + varDecl->name + "'");
                 }
+
+                builder->CreateStore(value, alloca);  // Stores the value in the variable  <-- This line is crucial
+
+            } else {
+                llvm::Constant* defaultValue = llvm::Constant::getNullValue(type);
+                builder->CreateStore(defaultValue, alloca);
             }
-        } else {
-            // If varDecl->value is nullptr and you want to ensure a non-null value on the stack, you can do this:
-            llvm::Constant* defaultValue = llvm::Constant::getNullValue(type);  // Assuming type is the LLVM type of the variable
-            builder->CreateStore(defaultValue, alloca);
+
+            symbolTable[varDecl->name] = alloca; // Adds the variable to the symbolTable hashmap
         }
-        symbolTable[varDecl->name] = alloca; // Adds the variable to the symbolTable hashmap
-    } // TODO: FIX ERROR: Declared variables are set as null on the stack
+    }
 
 
     llvm::Type* convertToLLVMType(const TypeRepresentation* typeRep, const VariableDeclaration* varDecl) {
