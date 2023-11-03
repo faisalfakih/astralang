@@ -18,6 +18,16 @@
 
 #define LOG(x) std::cout << x << std::endl;
 
+struct KeyValuePair {
+    llvm::Type* key;
+    llvm::Type* value;
+};
+
+struct SimpleMap {
+    llvm::ArrayType* pairs;  // Array of KeyValuePair
+    llvm::Type* size;  // Size of the map
+};
+
 class SemanticAnalyzer {
 public:
     SemanticAnalyzer()
@@ -122,24 +132,8 @@ private:
             llvm::AllocaInst* alloca = builder->CreateAlloca(type, nullptr, varDecl->name.c_str()); // Allocates the variable on the stack
 
             if (varDecl->value) {
-                const NumberLiteral* numberLiteral = dynamic_cast<const NumberLiteral*>(varDecl->value.get());
-                if (!numberLiteral) {
-                    throw std::runtime_error("Value for variable '" + varDecl->name + "' must be a literal value!");
-                }
-
-                llvm::Type* rhsType = determineExpressionType(numberLiteral, type); // Determine the type of it
-                llvm::Constant* value = nullptr;  // Initialize value to nullptr
-
-                if (rhsType->isIntegerTy()) {
-                    value = llvm::ConstantInt::get(*context, llvm::APInt(getBitWidth(rhsType), numberLiteral->getIntValue(), true));
-                } else if (rhsType->isFloatTy() || rhsType->isDoubleTy()) {
-                    value = llvm::ConstantFP::get(*context, llvm::APFloat(numberLiteral->getFloatValue()));
-                } else {
-                    throw std::runtime_error("Unsupported type for variable '" + varDecl->name + "'");
-                }
-
-                builder->CreateStore(value, alloca);  // Stores the value in the variable  <-- This line is crucial
-
+                llvm::Value* initValue = evaluateExpression(varDecl->value.get());
+                builder->CreateStore(initValue, alloca);  // Stores the value in the variable
             } else {
                 llvm::Constant* defaultValue = llvm::Constant::getNullValue(type);
                 builder->CreateStore(defaultValue, alloca);
@@ -175,7 +169,11 @@ private:
         } else if (const ArrayType* arrayType = dynamic_cast<const ArrayType*>(typeRep)) {
             llvm::Type* elementType = convertToLLVMType(arrayType->elementType.get(), varDecl);
             return llvm::ArrayType::get(elementType, varDecl->size);
-        } // TODO: add support for vector types and hashmap types (map and unordered_map)
+        } else if (const PointerType* pointerType = dynamic_cast<const PointerType*>(typeRep)) {
+            llvm::Type* baseType = convertToLLVMType(pointerType->type.get(), varDecl);
+            return llvm::PointerType::getUnqual(baseType);  // Create an unqualified pointer type
+        }
+        // TODO: add support for vector types and hashmap types (map and unordered_map)
         throw std::runtime_error("Incorrect type");
     }
 
@@ -189,6 +187,61 @@ private:
         // Compare the LLVM type representations
         if (!compareDataTypes(lhsType, rhsType)) {
             throw std::runtime_error("Type mismatch in assignment of variable " + varDecl->name );
+        }
+
+        if (lhsType->isPointerTy() && rhsType->isPointerTy()) {
+//            llvm::AllocaInst* lhsAlloca = llvm::dyn_cast<llvm::AllocaInst>(lhsType);
+//            llvm::AllocaInst* rhsAlloca = llvm::dyn_cast<llvm::AllocaInst>(rhsType);
+//            if (lhsAlloca && rhsAlloca) {
+//                llvm::Type* lhsPointerType = lhsAlloca->getAllocatedType();
+//                llvm::Type* rhsPointerType = rhsAlloca->getAllocatedType();
+//                if (!compareDataTypes(lhsPointerType, rhsPointerType)) {
+//                    throw std::runtime_error("Type mismatch in pointer assignment of variable " + varDecl->name);
+//                }
+//            }
+
+            llvm::Value* lhsValue = symbolTable[varDecl->name];
+            llvm::Value* rhsValue = evaluateExpression(rhs);
+
+            llvm::Type* lhsPtrType = lhsValue->getType();
+            llvm::Type* rhsPtrType = rhsValue->getType();
+
+        }
+
+    }
+
+    llvm::Value* evaluateExpression(const Expression* expression) {
+        switch (expression->getNodeType()) {
+            case ASTNodeType::NumberLiteral: {
+                const NumberLiteral* numberLiteral = dynamic_cast<const NumberLiteral*>(expression);
+                if (numberLiteral->isDecimal()) {
+                    return llvm::ConstantFP::get(*context, llvm::APFloat(numberLiteral->getFloatValue()));
+                } else {
+                    return llvm::ConstantInt::get(*context, llvm::APInt(32, numberLiteral->getIntValue(), true));  // Assuming 32-bit integers
+                }
+            }
+            case ASTNodeType::BinaryExpression: {
+                const BinaryExpression* binaryExpression = dynamic_cast<const BinaryExpression*>(expression);
+                llvm::Value* leftValue = evaluateExpression(binaryExpression->left.get());
+                llvm::Value* rightValue = evaluateExpression(binaryExpression->right.get());
+                switch (binaryExpression->op) {
+                    case BinaryExpression::Operator::PLUS:
+                        return builder->CreateAdd(leftValue, rightValue, "addtmp");
+                    case BinaryExpression::Operator::MINUS:
+                        return builder->CreateSub(leftValue, rightValue, "subtmp");
+                    case BinaryExpression::Operator::MULTIPLY:
+                        return builder->CreateMul(leftValue, rightValue, "multmp");
+                    case BinaryExpression::Operator::DIVIDE:
+                        return builder->CreateSDiv(leftValue, rightValue, "divtmp");
+                    case BinaryExpression::Operator::MODULO:
+                        return builder->CreateSRem(leftValue, rightValue, "modtmp");
+                    default:
+                        throw std::runtime_error("Unsupported binary operator");
+                }
+            }
+            // TODO: Add other expression types
+            default:
+                throw std::runtime_error("Unsupported expression type");
         }
     }
 
@@ -231,10 +284,19 @@ private:
                     }
                 }
             }
+            case ASTNodeType::BinaryExpression: {
+                const BinaryExpression* binaryExpression = dynamic_cast<const BinaryExpression*>(expression);
+                // Assume both operands have the same type for simplicity, or check them separately
+                return determineExpressionType(binaryExpression->left.get(), lhsType);
+            }
             default:
-                throw std::runtime_error("Unsupported node type in determineExpressionType");
+                llvm::Value* expressionValue = evaluateExpression(expression);
+                return expressionValue->getType(); // Get the type of the evaluated expression
         }
     }
+
+    // TODO: ANalyzer function declarations
+
 };
 
 

@@ -101,7 +101,9 @@ private:
                         expect(TokenType::TOKEN_COMMA);
                         std::unique_ptr<TypeRepresentation> valueType = parseType();
                         expect(TokenType::TOKEN_GREATER);
-                        return std::make_unique<MapType>(std::make_unique<BasicType>(basicType), std::make_unique<BasicType>(basicType), true);
+
+                        if (ordered) return std::make_unique<MapType>(std::make_unique<BasicType>(basicType), std::make_unique<BasicType>(basicType));
+                        else return std::make_unique<UnorderedMapType>(std::make_unique<BasicType>(basicType), std::make_unique<BasicType>(basicType));
                     }
                 }
 

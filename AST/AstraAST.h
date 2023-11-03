@@ -26,6 +26,7 @@ enum class ASTNodeType {
     ArrayType,
     VectorType,
     MapType,
+    UnorderedMapType,
     PointerType,
     ReferenceType,
     MemberVariable,
@@ -255,10 +256,21 @@ public:
 
 class MapType : public TypeRepresentation {
 public:
-    MapType(std::unique_ptr<TypeRepresentation> keyType, std::unique_ptr<TypeRepresentation> valueType, bool ordered = true)
-            : keyType(std::move(keyType)), valueType(std::move(valueType)), ordered(ordered) {}
+    MapType(std::unique_ptr<TypeRepresentation> keyType, std::unique_ptr<TypeRepresentation> valueType)
+            : keyType(std::move(keyType)), valueType(std::move(valueType)) {}
 
-    bool ordered;
+    std::unique_ptr<TypeRepresentation> keyType;
+    std::unique_ptr<TypeRepresentation> valueType;
+
+    [[nodiscard]] ASTNodeType getNodeType() const override {
+        return ASTNodeType::MapType;
+    }
+};
+class UnorderedMapType : public TypeRepresentation {
+public:
+    UnorderedMapType(std::unique_ptr<TypeRepresentation> keyType, std::unique_ptr<TypeRepresentation> valueType)
+    : keyType(std::move(keyType)), valueType(std::move(valueType)) {}
+
     std::unique_ptr<TypeRepresentation> keyType;
     std::unique_ptr<TypeRepresentation> valueType;
 
