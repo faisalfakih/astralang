@@ -1,7 +1,7 @@
-/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/intrinsics_gen.dir
-/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/omp_gen.dir
-/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/acc_gen.dir
-/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/RISCVTargetParserTableGen.dir
-/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/AstraLang.dir
-/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/faisalfakih/Desktop/Coding/AstraLang/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/intrinsics_gen.dir
+/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/omp_gen.dir
+/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/acc_gen.dir
+/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/RISCVTargetParserTableGen.dir
+/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/AstraLang.dir
+/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/rebuild_cache.dir
