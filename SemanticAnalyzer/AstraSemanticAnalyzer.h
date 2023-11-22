@@ -18,15 +18,6 @@
 
 #define LOG(x) std::cout << x << std::endl;
 
-struct KeyValuePair {
-    llvm::Type* key;
-    llvm::Type* value;
-};
-
-struct SimpleMap {
-    llvm::ArrayType* pairs;  // Array of KeyValuePair
-    llvm::Type* size;  // Size of the map
-};
 
 class SemanticAnalyzer {
 public:
@@ -34,35 +25,39 @@ public:
             : context(std::make_unique<llvm::LLVMContext>()),
               module(std::make_unique<llvm::Module>("AstraModule", *context)),
               builder(std::make_unique<llvm::IRBuilder<>>(*context)),
-              currentScope(new Scope) {}
+              currentScope(new Scope),
+              currentFunction(nullptr) {}
 
+    ~SemanticAnalyzer() {
+        delete currentFunction;
+    }
     void analyze(const std::vector<std::unique_ptr<ASTNode>>& parseTree) {
         for (const std::unique_ptr<ASTNode>& node : parseTree) {
             analyzeNode(node.get());
-        } // TODO: Add checks for a main function
+        }
     }
 
     void printIR() {
         module->print(llvm::errs(), nullptr);
     }
 private:
-    bool hasMainFunction = false;
     std::unique_ptr<llvm::LLVMContext> context; // This is a container for all the LLVM IR
     std::unique_ptr<llvm::Module> module; // This is a container for all the LLVM IR
     std::unique_ptr<llvm::IRBuilder<>> builder; // This is a builder for LLVM IR
     std::unordered_map<std::string, llvm::Value*> namedValues;
     std::unordered_map<std::string, llvm::Value*> symbolTable;
-    Scope* currentScope;
+    llvm::Function* currentFunction;
+    std::unique_ptr<Scope> currentScope;
 
     void enterNewScope() {
-        currentScope = currentScope->createChildScope();
+        currentScope = std::make_unique<Scope>(currentScope->createChildScope());
     }
-
     void exitCurrentScope() {
-        Scope* parent = currentScope->getParentScope();
-        if (parent) { // If parent exists (if it's not equal to nullptr)
-            delete currentScope;
-            currentScope = parent;
+        if (currentScope) {
+            currentScope.reset(currentScope->getParentScope());
+        }
+        else {
+            throw std::runtime_error("ERROR: Attempted to exit global scope.");
         }
     }
 
@@ -73,80 +68,75 @@ private:
                 declareVariable(varDecl);
                 break;
             }
+            case ASTNodeType::FunctionDeclaration: {
+                const FunctionDeclaration* funcDecl = dynamic_cast<const FunctionDeclaration*>(node);
+                analyzeFunctionDeclaration(funcDecl);
+                break;
+            }
+            case ASTNodeType::IfStatement: {
+                const IfStatement* ifStatement = dynamic_cast<const IfStatement*>(node);
+                analyzeIfStatement(ifStatement);
+                break;
+            }
             default:
                 throw std::runtime_error("ERROR ENCOUNTERED");
         }
     }
 
     void declareVariable(const VariableDeclaration* varDecl) {
-        llvm::Type* type = convertToLLVMType(varDecl->type.get(), varDecl);
+        llvm::Type* type = convertToLLVMType(varDecl->type.get());
 
         if (symbolTable.find(varDecl->name) != symbolTable.end()) {
-            throw std::runtime_error("Variable '" + varDecl->name + "' has already been declared within a parent scope or its current scope!");
+            throw std::runtime_error("Variable '" + varDecl->name + "' already declared");
         }
         checkAssignment(varDecl, varDecl->value.get());
 
-        llvm::Function* function = llvm::Function::Create(
-                llvm::FunctionType::get(llvm::Type::getVoidTy(*context), false),
-                llvm::Function::ExternalLinkage,
-                "main",
-                module.get()
-        );
-        llvm::BasicBlock* basicBlock = llvm::BasicBlock::Create(*context, "entry", function);
-        builder->SetInsertPoint(basicBlock);
-
-        if (varDecl->isConst) {  // Check if it's a constant
-            if (varDecl->value == nullptr) {
-                throw std::runtime_error("Constant '" + varDecl->name + "' must be initialized!");
-            }
-            const NumberLiteral* numberLiteral = dynamic_cast<const NumberLiteral*>(varDecl->value.get());
-            if (!numberLiteral) {
-                throw std::runtime_error("Value for constant variable '" + varDecl->name + "' must be a literal value!");
-            }
-
-            llvm::Type* rhsType = determineExpressionType(numberLiteral, type); // Determine the type of it
-            llvm::Constant* value = nullptr;  // Initialize value to nullptr
-
-            if (rhsType->isIntegerTy()) {
-                value = llvm::ConstantInt::get(*context, llvm::APInt(getBitWidth(rhsType), numberLiteral->getIntValue(), true));
-            } else if (rhsType->isFloatTy() || rhsType->isDoubleTy()) {
-                value = llvm::ConstantFP::get(*context, llvm::APFloat(numberLiteral->getFloatValue()));
+        // Handling Global Variables
+        if (!currentFunction) {
+            // Logic for global variable declaration
+            llvm::Constant* initValue = nullptr;
+            if (varDecl->value) {
+                initValue = llvm::dyn_cast<llvm::Constant>(evaluateExpression(varDecl->value.get()));
+                if (!initValue) {
+                    throw std::runtime_error("Initializer for global variable '" + varDecl->name + "' is not a constant!");
+                }
             } else {
-                throw std::runtime_error("Unsupported type for constant variable '" + varDecl->name + "'");
+                initValue = llvm::Constant::getNullValue(type);
             }
 
-            // Create a global constant variable
             llvm::GlobalVariable* globalVar = new llvm::GlobalVariable(
                     *module,
                     type,
-                    true,  // isConstant
+                    varDecl->isConst,  // isConstant
                     llvm::GlobalValue::InternalLinkage,
-                    value,  // Initializer
+                    initValue,  // Initializer
                     varDecl->name
             );
 
-            // Add the global variable to the symbolTable
             symbolTable[varDecl->name] = globalVar;
-
-        } else {  // Handle non-constant variables
-            llvm::AllocaInst* alloca = builder->CreateAlloca(type, nullptr, varDecl->name.c_str()); // Allocates the variable on the stack
-
-            if (varDecl->value) {
-                llvm::Value* initValue = evaluateExpression(varDecl->value.get());
-                builder->CreateStore(initValue, alloca);  // Stores the value in the variable
-            } else {
-                llvm::Constant* defaultValue = llvm::Constant::getNullValue(type);
-                builder->CreateStore(defaultValue, alloca);
-            }
-
-            symbolTable[varDecl->name] = alloca; // Adds the variable to the symbolTable hashmap
+            return;
         }
+
+        // Handling Local Variables (within functions)
+        llvm::BasicBlock* basicBlock = &currentFunction->getEntryBlock();
+        builder->SetInsertPoint(basicBlock);
+
+        llvm::AllocaInst* alloca = builder->CreateAlloca(type, nullptr, varDecl->name.c_str());
+        if (varDecl->value) {
+            llvm::Value* initValue = evaluateExpression(varDecl->value.get());
+            builder->CreateStore(initValue, alloca);
+        } else {
+            llvm::Constant* defaultValue = llvm::Constant::getNullValue(type);
+            builder->CreateStore(defaultValue, alloca);
+        }
+
+        symbolTable[varDecl->name] = alloca;
     }
 
 
-    llvm::Type* convertToLLVMType(const TypeRepresentation* typeRep, const VariableDeclaration* varDecl) {
+    llvm::Type* convertToLLVMType(const TypeRepresentation* typeRep) {
         if (const BasicType* basicType = dynamic_cast<const BasicType*>(typeRep)) {
-            switch (basicType->type) { // Basic type variables
+            switch (basicType->type) {
                 case BasicType::Type::INT:
                     return llvm::Type::getInt32Ty(*context);
                 case BasicType::Type::LONG:
@@ -167,21 +157,21 @@ private:
                     throw std::runtime_error("Incorrect type");
             }
         } else if (const ArrayType* arrayType = dynamic_cast<const ArrayType*>(typeRep)) {
-            llvm::Type* elementType = convertToLLVMType(arrayType->elementType.get(), varDecl);
-            return llvm::ArrayType::get(elementType, varDecl->size);
+            llvm::Type* elementType = convertToLLVMType(arrayType->elementType.get());
+            return llvm::ArrayType::get(elementType, arrayType->size);
         } else if (const PointerType* pointerType = dynamic_cast<const PointerType*>(typeRep)) {
-            llvm::Type* baseType = convertToLLVMType(pointerType->type.get(), varDecl);
-            return llvm::PointerType::getUnqual(baseType);  // Create an unqualified pointer type
+            llvm::Type* baseType = convertToLLVMType(pointerType->type.get());
+            return llvm::PointerType::getUnqual(baseType);
         }
-        // TODO: add support for vector types and hashmap types (map and unordered_map)
-        throw std::runtime_error("Incorrect type");
+        // TODO: Add more types if necessary
+        throw std::runtime_error("Unknown type representation");
     }
 
 
     // Variable Declaration
     void checkAssignment(const VariableDeclaration* varDecl, const Expression* rhs) {
         // Convert lhs and rhs types to LLVM types
-        llvm::Type* lhsType = convertToLLVMType(varDecl->type.get(), varDecl);
+        llvm::Type* lhsType = convertToLLVMType(varDecl->type.get());
         llvm::Type* rhsType = determineExpressionType(rhs, lhsType);
 
         // Compare the LLVM type representations
@@ -239,7 +229,7 @@ private:
                         throw std::runtime_error("Unsupported binary operator");
                 }
             }
-            // TODO: Add other expression types
+                // TODO: Add other expression types
             default:
                 throw std::runtime_error("Unsupported expression type");
         }
@@ -295,7 +285,130 @@ private:
         }
     }
 
-    // TODO: ANalyzer function declarations
+    // TODO: Analyze currentFunction declarations
+    void analyzeFunctionDeclaration(const FunctionDeclaration* funcDecl) {
+        if (currentScope->getSymbol(funcDecl->name)) {
+            throw std::runtime_error("Function '" + funcDecl->name + "' already declared");
+        }
+
+        llvm::Type* returnType = convertToLLVMType(funcDecl->returnType.get());
+
+        std::vector<llvm::Type*> paramTypes;
+        paramTypes.reserve(funcDecl->params.size());
+        for (const std::unique_ptr<Parameter>& param : funcDecl->params) {
+            paramTypes.push_back(convertToLLVMType(param->type.get()));
+        }
+
+        llvm::FunctionType* funcType = llvm::FunctionType::get(returnType, paramTypes, false);
+        llvm::Function* function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, funcDecl->name, module.get());
+
+
+        // Change the current function
+        currentFunction = function;
+        enterNewScope();
+
+        size_t idx = 0;
+        for (auto& arg : function->args()) {
+            arg.setName(funcDecl->params[idx]->name);
+            symbolTable[arg.getName().str()] = &arg;
+            ++idx;
+        }
+
+        for (const std::unique_ptr<Statement>& stmt : funcDecl->body->statements) {
+            analyzeNode(stmt.get());
+        }
+
+        exitCurrentScope();
+        currentFunction = nullptr;
+    }
+
+    void analyzeIfStatement(const IfStatement* ifStmt) {
+        llvm::Value* conditionValue = analyzeLogicalExpression(dynamic_cast<const LogicalExpression*>(ifStmt->condition.get()));
+        if (!conditionValue) {
+            throw std::runtime_error("Failed to analyze condition");
+        }
+
+        // Convert condition to a boolean to check with 0 or 1
+        conditionValue = builder->CreateICmpNE(conditionValue, llvm::ConstantInt::get(llvm::Type::getInt1Ty(*context), 0, true), "ifcond");
+
+        llvm::Function* function = builder->GetInsertBlock()->getParent();
+
+        // Create blocks for the then and else case. Insert the 'then' block at the end of the function.
+        llvm::BasicBlock* thenBlock = llvm::BasicBlock::Create(*context, "then", function);
+        llvm::BasicBlock* elseBlock = llvm::BasicBlock::Create(*context, "else", function);
+        llvm::BasicBlock* mergeBlock = llvm::BasicBlock::Create(*context, "ifcont", function);
+
+        builder->CreateCondBr(conditionValue, thenBlock, elseBlock);
+
+        // Emit then block.
+        builder->SetInsertPoint(thenBlock);
+        analyzeNode(ifStmt->trueBranch.get());
+        builder->CreateBr(mergeBlock);
+        thenBlock = builder->GetInsertBlock();
+
+        // Emit else block.
+        builder->SetInsertPoint(elseBlock);
+        if (ifStmt->falseBranch) {
+            analyzeNode(ifStmt->falseBranch.get());
+        }
+        builder->CreateBr(mergeBlock);
+        elseBlock = builder->GetInsertBlock();
+
+        // Emit merge block.
+        builder->SetInsertPoint(mergeBlock);
+    }
+
+
+
+    llvm::Value* analyzeLogicalExpression(const LogicalExpression* logExpr) {
+        switch (logExpr->getNodeType()) {
+            case ASTNodeType::ComparisonExpression: {
+                const ComparisonExpression* compExpr = dynamic_cast<const ComparisonExpression*>(logExpr);
+                llvm::Value* leftValue = evaluateExpression(compExpr->left.get());
+                llvm::Value* rightValue = evaluateExpression(compExpr->right.get());
+                switch (compExpr->op) {
+                    case ComparisonExpression::Operator::EQUAL:
+                        return builder->CreateICmpEQ(leftValue, rightValue, "eqtmp");
+                    case ComparisonExpression::Operator::NOT_EQUAL:
+                        return builder->CreateICmpNE(leftValue, rightValue, "netmp");
+                    case ComparisonExpression::Operator::LESS:
+                        return builder->CreateICmpSLT(leftValue, rightValue, "lttmp");
+                    case ComparisonExpression::Operator::LESS_EQUAL:
+                        return builder->CreateICmpSLE(leftValue, rightValue, "letmp");
+                    case ComparisonExpression::Operator::GREATER:
+                        return builder->CreateICmpSGT(leftValue, rightValue, "gttmp");
+                    case ComparisonExpression::Operator::GREATER_EQUAL:
+                        return builder->CreateICmpSGE(leftValue, rightValue, "getmp");
+                    default:
+                        throw std::runtime_error("Unsupported comparison operator");
+                }
+            }
+            case ASTNodeType::LogicalExpression: {
+                llvm::Value* leftValue = evaluateExpression(logExpr->left.get());
+                llvm::Value* rightValue = evaluateExpression(logExpr->right.get());
+                switch (logExpr->op) {
+                    case LogicalExpression::Operator::AND:
+                        return builder->CreateAnd(leftValue, rightValue, "andtmp");
+                    case LogicalExpression::Operator::OR:
+                        return builder->CreateOr(leftValue, rightValue, "ortmp");
+                    default:
+                        throw std::runtime_error("Unsupported logical operator");
+                }
+            }
+            case ASTNodeType::UnaryExpression: {
+                const UnaryExpression* unaryExpr = dynamic_cast<const UnaryExpression*>(logExpr);
+                if (unaryExpr->op == UnaryExpression::Operator::NOT) {
+                    llvm::Value* value = evaluateExpression(unaryExpr->operand.get()); // Updated this line
+                    return builder->CreateNot(value, "nottmp");
+                } else {
+                    throw std::runtime_error("Unsupported unary operator in logical context");
+                }
+            }
+            default:
+                throw std::runtime_error("Unsupported logical expression type");
+        }
+    }
+
 
 };
 

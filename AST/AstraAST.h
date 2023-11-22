@@ -186,7 +186,7 @@ public:
     }
 };
 
-// Represent function calls
+// Represent currentFunction calls
 class FunctionCall : public Expression {
 public:
     FunctionCall(std::string name, std::vector<std::unique_ptr<Expression>> args)
@@ -245,7 +245,7 @@ public:
 class VectorType : public TypeRepresentation {
 public:
     VectorType(std::unique_ptr<TypeRepresentation> elementType, size_t size)
-    : elementType(std::move(elementType)), size(std::move(size)) {}
+            : elementType(std::move(elementType)), size(std::move(size)) {}
     std::unique_ptr<TypeRepresentation> elementType;
     size_t size;
 
@@ -269,7 +269,7 @@ public:
 class UnorderedMapType : public TypeRepresentation {
 public:
     UnorderedMapType(std::unique_ptr<TypeRepresentation> keyType, std::unique_ptr<TypeRepresentation> valueType)
-    : keyType(std::move(keyType)), valueType(std::move(valueType)) {}
+            : keyType(std::move(keyType)), valueType(std::move(valueType)) {}
 
     std::unique_ptr<TypeRepresentation> keyType;
     std::unique_ptr<TypeRepresentation> valueType;
@@ -437,10 +437,9 @@ class Statement : public ASTNode {[[nodiscard]] virtual ASTNodeType getNodeType(
 class BlockStatement : public Statement {
 public:
     explicit BlockStatement(std::vector<std::unique_ptr<Statement>> statements)
-            : statements(std::move(statements)), blockScope(new Scope()) {}
+            : statements(std::move(statements)) {}
 
     std::vector<std::unique_ptr<Statement>> statements;
-    std::unique_ptr<Scope> blockScope;
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::BlockStatement;
@@ -463,11 +462,10 @@ public:
 class IfStatement : public Statement {
 public:
     IfStatement(std::unique_ptr<Expression> condition, std::unique_ptr<Statement> trueBranch, std::unique_ptr<Statement> falseBranch = {})
-            : condition(std::move(condition)), trueBranch(std::move(trueBranch)), falseBranch(std::move(falseBranch)), ifScope(std::make_unique<Scope>()) {}
+            : condition(std::move(condition)), trueBranch(std::move(trueBranch)), falseBranch(std::move(falseBranch)) {}
     std::unique_ptr<Expression> condition;
     std::unique_ptr<Statement> trueBranch;
     std::unique_ptr<Statement> falseBranch;
-    std::unique_ptr<Scope> ifScope;
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::IfStatement;
@@ -612,13 +610,17 @@ public:
 // Declarations
 class VariableDeclaration : public Statement {
 public:
-    VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name, std::unique_ptr<Expression> value = nullptr, bool isConst = false, size_t size = 0)
-            : type(std::move(type)), name(std::move(name)), value(std::move(value)), isConst(isConst), size(size) {}
+    VariableDeclaration(std::unique_ptr<TypeRepresentation> type, std::string name,
+                        std::unique_ptr<Expression> value = nullptr, bool isConst = false, size_t lifetime = 0,
+                        size_t size = 0)
+            : type(std::move(type)), name(std::move(name)), value(std::move(value)), isConst(isConst), size(size), lifetime(lifetime) {}
+
     size_t size;
     bool isConst;
     std::unique_ptr<TypeRepresentation> type;
     std::string name;
     std::unique_ptr<Expression> value;
+    size_t lifetime;
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::VariableDeclaration;
@@ -644,7 +646,6 @@ private:
 class FunctionDeclaration : public ModifiableDeclaration {
 public:
     enum Kind {
-        MAIN,
         REGULAR,
         CONSTRUCTOR,
         DESTRUCTOR
@@ -653,7 +654,7 @@ public:
     FunctionDeclaration(std::string name,
                         std::vector<std::unique_ptr<Parameter>> params,
                         std::unique_ptr<TypeRepresentation> returnType = nullptr,
-                        std::unique_ptr<Statement> body = nullptr, Kind kind = REGULAR)
+                        std::unique_ptr<BlockStatement> body = nullptr, Kind kind = REGULAR)
             : name(std::move(name)), params(std::move(params)), returnType(std::move(returnType)),
               body(std::move(body)), functionScope(new Scope()), kind(kind) {}
 
@@ -661,21 +662,8 @@ public:
     std::string name;
     std::vector<std::unique_ptr<Parameter>> params;
     std::unique_ptr<TypeRepresentation> returnType;
-    std::unique_ptr<Statement> body;
+    std::unique_ptr<BlockStatement> body;
     std::unique_ptr<Scope> functionScope;
-
-    [[nodiscard]] ASTNodeType getNodeType() const override {
-        return ASTNodeType::FunctionDeclaration;
-    }
-};
-
-class MainFunction : public ModifiableDeclaration {
-public:
-    MainFunction(std::unique_ptr<Statement> body)
-            : body(std::move(body)), mainScope(new Scope()) {}
-
-    std::unique_ptr<Statement> body;
-    std::unique_ptr<Scope> mainScope;
 
     [[nodiscard]] ASTNodeType getNodeType() const override {
         return ASTNodeType::FunctionDeclaration;
@@ -841,8 +829,8 @@ public:
 class LogicalExpression : public Expression {
 public:
     enum Operator {
-        AND_AND,
-        OR_OR
+        AND,
+        OR
     };
 
     LogicalExpression(Operator op, std::unique_ptr<Expression> left, std::unique_ptr<Expression> right)

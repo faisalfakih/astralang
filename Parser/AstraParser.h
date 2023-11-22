@@ -67,16 +67,16 @@ private:
 
     std::unique_ptr<TypeRepresentation> parseType() {
         std::map<TokenType, BasicType::Type> typeMap = {
-                { TokenType::TOKEN_INT_TYPE, BasicType::INT },
-                { TokenType::TOKEN_SHORT_TYPE, BasicType::SHORT },
-                { TokenType::TOKEN_LONG_TYPE, BasicType::LONG },
-                { TokenType::TOKEN_FLOAT_TYPE, BasicType::FLOAT },
+                { TokenType::TOKEN_INT_TYPE,    BasicType::INT },
+                { TokenType::TOKEN_SHORT_TYPE,  BasicType::SHORT },
+                { TokenType::TOKEN_LONG_TYPE,   BasicType::LONG },
+                { TokenType::TOKEN_FLOAT_TYPE,  BasicType::FLOAT },
                 { TokenType::TOKEN_DOUBLE_TYPE, BasicType::DOUBLE },
-                { TokenType::TOKEN_CHAR_TYPE, BasicType::CHAR },
+                { TokenType::TOKEN_CHAR_TYPE,   BasicType::CHAR },
                 { TokenType::TOKEN_STRING_TYPE, BasicType::STRING },
-                { TokenType::TOKEN_BOOL_TYPE, BasicType::BOOL },
-                { TokenType::TOKEN_VOID_TYPE, BasicType::VOID },
-                { TokenType::TOKEN_VAR, BasicType::VAR },
+                { TokenType::TOKEN_BOOL_TYPE,   BasicType::BOOL },
+                { TokenType::TOKEN_VOID_TYPE,   BasicType::VOID },
+                { TokenType::TOKEN_LET,         BasicType::VAR },
         };
 
         for (const auto& [tokenType, basicType] : typeMap) {
@@ -296,7 +296,7 @@ private:
             case TokenType::TOKEN_STRING_TYPE:
             case TokenType::TOKEN_BOOL_TYPE:
             case TokenType::TOKEN_VOID_TYPE:
-            case TokenType::TOKEN_VAR:
+            case TokenType::TOKEN_LET:
             case TokenType::TOKEN_CONST:
                 parseVariableDeclaration();
                 break;
@@ -318,7 +318,7 @@ private:
     }
 
 
-    std::unique_ptr<Statement> parseBlockStatement() {
+    std::unique_ptr<BlockStatement> parseBlockStatement() {
         consumeToken();  // Consume the opening brace TOKEN_LBRACE
         std::vector<std::unique_ptr<Statement>> statements;
 
@@ -341,18 +341,13 @@ private:
     }
 
     // If Statements
-    std::unique_ptr<Statement> parseIfStatementBody()  {
-        if (checkTokenType(TokenType::TOKEN_LBRACE)) {
-            return parseBlockStatement();
-        }
-        return parseStatement();
+    std::unique_ptr<BlockStatement> parseIfStatementBody()  {
+        return parseBlockStatement();
     }
 
     std::unique_ptr<IfStatement> parseIfStatement() {
         consumeToken(); // consume 'if'
-        expect(TokenType::TOKEN_LPAREN);
         std::unique_ptr<Expression> condition = parseExpression();
-        expect(TokenType::TOKEN_RPAREN);
 
         consumeOptionalNewlines();  // Consume newlines if they exist before the block
 
@@ -392,9 +387,7 @@ private:
 
     std::unique_ptr<WhileLoop> parseWhileLoop() {
         consumeToken();  // consume 'while'
-        expect(TokenType::TOKEN_LPAREN);
         std::unique_ptr<Expression> condition = parseExpression();
-        expect(TokenType::TOKEN_RPAREN);
 
         consumeOptionalNewlines();  // Consume newlines if they exist before the block
 
@@ -408,7 +401,6 @@ private:
     // For Loop
     std::unique_ptr<Statement> parseForLoop() {
         expect(TokenType::TOKEN_FOR);
-        expect(TokenType::TOKEN_LPAREN);
         std::unique_ptr<TypeRepresentation> type = parseType();
         if (!type) {
             throw std::runtime_error("Expected a type for the loop variable at line " + std::to_string(currentToken().line));
@@ -426,7 +418,6 @@ private:
                 // If it's a range-based loop
                 if (match(TokenType::TOKEN_ARROW)) {
                     std::unique_ptr<Expression> endExpr = parseExpression();
-                    expect(TokenType::TOKEN_RPAREN);
 
                     consumeOptionalNewlines();  // Consume newlines if they exist before the block
 
@@ -440,8 +431,6 @@ private:
                 }
                     // If it's an iterator-based loop
                 else {
-                    expect(TokenType::TOKEN_RPAREN);
-
                     consumeOptionalNewlines();  // Consume newlines if they exist before the block
 
                     enterNewScope();  // Enter scope for loop body
@@ -499,40 +488,7 @@ private:
 
     // Parse Class Methods
     std::unique_ptr<FunctionDeclaration> parseMethodDeclaration() {
-        expect(TokenType::TOKEN_FUNC);
-        if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
-            throw std::runtime_error("Expected a method name after 'func' at line " + std::to_string(currentToken().line) + ".");
-        }
-
-        std::string methodName = currentToken().lexeme;
-        consumeToken();
-
-        std::vector<std::unique_ptr<Parameter>> params = parseParameters();
-
-        // Check if the method returns a type
-        std::unique_ptr<TypeRepresentation> returnType = nullptr;
-        if (checkTokenType(TokenType::TOKEN_ARROW)) {
-            consumeToken();
-            returnType = parseType();
-            if (!returnType) {
-                throw std::runtime_error("Expected return type after '->' at line " + std::to_string(currentToken().line));
-            }
-        }
-
-        std::unique_ptr<Statement> body;
-        // Code block
-        if (checkTokenType(TokenType::TOKEN_LBRACE)) {
-            body = parseBlockStatement();
-        } else if (peek().type == TokenType::TOKEN_NEWLINE) {
-            consumeToken();  // consume newline if it's there
-            body = parseStatement();
-        } else if (isStartOfStatement(peek())) {
-            body = parseStatement();
-        } else {
-            throw std::runtime_error("Expected statement, new line or open bracket at line " + std::to_string(currentToken().line));
-        }
-
-        return std::make_unique<FunctionDeclaration>(methodName, std::move(params), std::move(returnType), std::move(body));
+        parseFunctionDeclaration();
     }
 
 
@@ -540,20 +496,17 @@ private:
     std::unique_ptr<FunctionDeclaration> parseFunctionDeclaration() {
         expect(TokenType::TOKEN_FUNC);
         if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
-            throw std::runtime_error("Expected a function name after 'func' at line " + std::to_string(currentToken().line) + ".");
+            throw std::runtime_error("Expected a currentFunction name after 'func' at line " + std::to_string(currentToken().line) + ".");
         }
         FunctionDeclaration::Kind kind = FunctionDeclaration::Kind::REGULAR;
 
         std::string functionName = currentToken().lexeme;
-        if (functionName == "main") {
-            kind = FunctionDeclaration::Kind::MAIN;
-        }
 
         consumeToken();
 
         std::vector<std::unique_ptr<Parameter>> params = parseParameters();
 
-        // Check if the function returns a type
+        // Check if the currentFunction returns a type
         std::unique_ptr<TypeRepresentation> returnType = nullptr;
         if (checkTokenType(TokenType::TOKEN_ARROW)) {
             consumeToken();
@@ -563,17 +516,12 @@ private:
             }
         }
 
-        std::unique_ptr<Statement> body;
+        std::unique_ptr<BlockStatement> body;
         // Code block
         if (checkTokenType(TokenType::TOKEN_LBRACE)) {
             body = parseBlockStatement();
-        } else if (peek().type == TokenType::TOKEN_NEWLINE) {
-            consumeToken();  // consume newline if it's there
-            body = parseStatement();
-        } else if (isStartOfStatement(peek())) {
-            body = parseStatement();
         } else {
-            throw std::runtime_error("Expected statement, new line or open bracket at line " + std::to_string(currentToken().line));
+            throw std::runtime_error("Expected open bracket at line " + std::to_string(currentToken().line));
         }
 
         return std::make_unique<FunctionDeclaration>(functionName, std::move(params), std::move(returnType), std::move(body), kind);
@@ -591,7 +539,7 @@ private:
             case TokenType::TOKEN_STRING_TYPE:
             case TokenType::TOKEN_BOOL_TYPE:
             case TokenType::TOKEN_VOID_TYPE:
-            case TokenType::TOKEN_VAR:
+            case TokenType::TOKEN_LET:
             case TokenType::TOKEN_VECTOR:
             case TokenType::TOKEN_UNORDERED_MAP:
             case TokenType::TOKEN_MAP:
@@ -627,10 +575,17 @@ private:
     std::unique_ptr<VariableDeclaration> parseVariableDeclaration(bool withinParameter = false) {
         std::unique_ptr<TypeRepresentation> type;
         bool isConst = false;
+        size_t lifetime = 1;
 
         if (checkTokenType(TokenType::TOKEN_CONST)) {
             isConst = true;
             consumeToken();
+        }
+
+        // Check if there is a lifetime (1 by default meaning that if the variable goes out of scope it will be deleted)
+        if (checkTokenType(TokenType::TOKEN_NUMBER)) {
+            lifetime = std::stoll(currentToken().lexeme);
+            expect(TokenType::TOKEN_DOLLAR_SIGN);
         }
 
         // First, try to parse known types.
@@ -666,7 +621,7 @@ private:
         }
 
 
-        return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue), isConst, size);
+        return std::make_unique<VariableDeclaration>(std::move(type), varName, std::move(initValue), isConst, lifetime, size);
     }
 
     std::unique_ptr<VariableDeclaration> parseVariableDeclarationWithinParameter() {
@@ -710,7 +665,7 @@ private:
         // For constructors and destructors, no return type is expected
         std::unique_ptr<TypeRepresentation> returnType = nullptr;
 
-        std::unique_ptr<Statement> body;
+        std::unique_ptr<BlockStatement> body;
         if (checkTokenType(TokenType::TOKEN_LBRACE)) {
             body = parseBlockStatement();
         } else {
@@ -748,6 +703,7 @@ private:
             baseClassName = currentToken().lexeme;
             consumeToken();
         }
+
 
         std::vector<std::unique_ptr<MemberVariable>> privateMembers;
         std::vector<std::unique_ptr<MemberVariable>> publicMembers;
@@ -811,7 +767,7 @@ private:
     // Parse Function Call
     std::unique_ptr<FunctionCall> parseFunctionCall() {
         if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
-            throw std::runtime_error("Expected a function name at line " + std::to_string(currentToken().line) + ".");
+            throw std::runtime_error("Expected a currentFunction name at line " + std::to_string(currentToken().line) + ".");
         }
 
         std::string functionName = currentToken().lexeme;
@@ -819,7 +775,7 @@ private:
 
         // Check if the next token is an opening parenthesis
         if (currentToken().type != TokenType::TOKEN_LPAREN) {
-            throw std::runtime_error("Expected '(' after function name at line " + std::to_string(currentToken().line) + ".");
+            throw std::runtime_error("Expected '(' after currentFunction name at line " + std::to_string(currentToken().line) + ".");
         }
         consumeToken(); // consume '('
 
@@ -924,7 +880,7 @@ private:
             case TOKEN_BREAK:      // break statement
             case TOKEN_CONTINUE:   // continue statement
             case TOKEN_PRINT:      // print statement
-            case TOKEN_IDENTIFIER: // variable assignment, function call, etc.
+            case TOKEN_IDENTIFIER: // variable assignment, currentFunction call, etc.
             case TOKEN_INT_TYPE: // Variable Declarations
             case TOKEN_SHORT_TYPE:
             case TOKEN_LONG_TYPE:
@@ -934,7 +890,7 @@ private:
             case TOKEN_STRING_TYPE:
             case TOKEN_BOOL_TYPE:
             case TOKEN_VOID_TYPE:
-            case TOKEN_VAR:
+            case TOKEN_LET:
             case TOKEN_CONST:
                 return true;
             default:
@@ -988,7 +944,7 @@ public:
             case TokenType::TOKEN_STRING_TYPE:
             case TokenType::TOKEN_CHAR_TYPE:
             case TokenType::TOKEN_VOID_TYPE:
-            case TokenType::TOKEN_VAR:
+            case TokenType::TOKEN_LET:
             case TokenType::TOKEN_VECTOR:
             case TokenType::TOKEN_UNORDERED_MAP:
             case TokenType::TOKEN_MAP:
@@ -1016,6 +972,9 @@ public:
             case TokenType::TOKEN_STRING_LITERAL:
             case TokenType::TOKEN_CHAR_LITERAL:
             case TokenType::TOKEN_NUMBER:
+                if (peek(1).type == TokenType::TOKEN_DOLLAR_SIGN) {
+                    return parseVariableDeclaration();
+                }
                 return parsePrimaryExpression();
             case TokenType::TOKEN_RETURN:
                 return parseReturnStatement();

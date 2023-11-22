@@ -32,7 +32,7 @@ enum TokenType {
     TOKEN_STRING_TYPE, // 'string'
     TOKEN_BOOL_TYPE, // 'bool'
     TOKEN_VOID_TYPE, // 'void'
-    TOKEN_VAR, // 'var'
+    TOKEN_LET, // 'let'
     TOKEN_IDENTIFIER, // Identifier
     TOKEN_SEMI_COLON, // ';'
     TOKEN_FUNC, // 'func'
@@ -109,7 +109,8 @@ enum TokenType {
     TOKEN_SLASH_EQUAL, // '/='
     TOKEN_PERCENT_EQUAL, // '%='
     TOKEN_PLUS_PLUS, // '++'
-    TOKEN_MINUS_MINUS // '--'
+    TOKEN_MINUS_MINUS, // '--'
+    TOKEN_DOLLAR_SIGN // '$'
 };
 
 // Keyword List
@@ -124,8 +125,8 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"string",   TOKEN_STRING_TYPE},
         {"bool",     TOKEN_BOOL_TYPE},
         {"void",     TOKEN_VOID_TYPE},
-        {"var",      TOKEN_VAR},
-        {"func",       TOKEN_FUNC},
+        {"let",      TOKEN_LET},
+        {"func",     TOKEN_FUNC},
         {"return",   TOKEN_RETURN},
         {"if",       TOKEN_IF},
         {"else",     TOKEN_ELSE},
@@ -143,7 +144,7 @@ const std::unordered_map<std::string, TokenType> keywordMap = {
         {"read", TOKEN_READ},
         {"vector", TOKEN_VECTOR},
         {"map", TOKEN_MAP},
-        {"u_map", TOKEN_UNORDERED_MAP},
+        {"unordered_map", TOKEN_UNORDERED_MAP},
         {"class", TOKEN_CLASS},
         {"this", TOKEN_THIS},
         {"new", TOKEN_NEW},
@@ -438,6 +439,10 @@ std::vector<Token> Lexer(const std::string& input) {
                 break;
             case ']':
                 tokens.push_back({TOKEN_RSQUARE, "]", line, column});
+                column++;
+                break;
+            case '$':
+                tokens.push_back({TOKEN_DOLLAR_SIGN, "$", line, column});
                 column++;
                 break;
             default:
