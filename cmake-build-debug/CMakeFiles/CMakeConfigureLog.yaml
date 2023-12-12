@@ -4,16 +4,16 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineSystem.cmake:204 (message)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineSystem.cmake:211 (message)"
       - "CMakeLists.txt:2 (project)"
     message: |
       The system is: Darwin - 23.1.0 - arm64
   -
     kind: "message-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
       - "CMakeLists.txt:2 (project)"
     message: |
       Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
@@ -28,14 +28,14 @@ events:
       Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
       
       The C compiler identification is Clang, found in:
-        /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/3.26.4/CompilerIdC/a.out
+        /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/3.27.0/CompilerIdC/a.out
       
   -
     kind: "message-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
       - "CMakeLists.txt:2 (project)"
     message: |
       Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
@@ -50,19 +50,19 @@ events:
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
       
       The CXX compiler identification is Clang, found in:
-        /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/3.26.4/CompilerIdCXX/a.out
+        /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/3.27.0/CompilerIdCXX/a.out
       
   -
     kind: "try_compile-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "CMakeLists.txt:2 (project)"
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX"
-      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX"
+      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx"
+      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -74,16 +74,17 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX
+        Change Dir: '/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx'
         
-        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_a9ac9 && [1/2] /opt/homebrew/opt/llvm/bin/clang   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl,-v -MD -MT CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCCompilerABI.c
+        Run Build Command(s): /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -v cmTC_5c62a
+        [1/2] /opt/homebrew/opt/llvm/bin/clang   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl,-v -MD -MT CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -c /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCCompilerABI.c
         Homebrew clang version 17.0.5
         Target: arm64-apple-darwin23.1.0
         Thread model: posix
         InstalledDir: /opt/homebrew/opt/llvm/bin
         clang: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
          (in-process)
-         "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCCompilerABI.c
+         "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCCompilerABI.c
         clang -cc1 version 17.0.5 based upon LLVM 17.0.5 default target arm64-apple-darwin23.1.0
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include"
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/Library/Frameworks"
@@ -93,12 +94,12 @@ events:
          /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include
          /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/System/Library/Frameworks (framework directory)
         End of search list.
-        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -o cmTC_a9ac9   && :
+        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -o cmTC_5c62a   && :
         Homebrew clang version 17.0.5
         Target: arm64-apple-darwin23.1.0
         Thread model: posix
         InstalledDir: /opt/homebrew/opt/llvm/bin
-         "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_a9ac9 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a
+         "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_5c62a -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a
         @(#)PROGRAM:ld  PROJECT:dyld-1015.7
         BUILD 18:48:48 Aug 22 2023
         configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
@@ -112,8 +113,8 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "CMakeLists.txt:2 (project)"
     message: |
       Parsed C implicit include dir info: rv=done
@@ -130,22 +131,23 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "CMakeLists.txt:2 (project)"
     message: |
       Parsed C implicit link information:
         link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
-        ignore line: [Change Dir: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX]
+        ignore line: [Change Dir: '/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx']
         ignore line: []
-        ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_a9ac9 && [1/2] /opt/homebrew/opt/llvm/bin/clang   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl -v -MD -MT CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCCompilerABI.c]
+        ignore line: [Run Build Command(s): /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -v cmTC_5c62a]
+        ignore line: [[1/2] /opt/homebrew/opt/llvm/bin/clang   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl -v -MD -MT CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -c /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCCompilerABI.c]
         ignore line: [Homebrew clang version 17.0.5]
         ignore line: [Target: arm64-apple-darwin23.1.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /opt/homebrew/opt/llvm/bin]
         ignore line: [clang: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
         ignore line: [ (in-process)]
-        ignore line: [ "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-BitskX -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCCompilerABI.c]
+        ignore line: [ "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-D1bDsx -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCCompilerABI.c]
         ignore line: [clang -cc1 version 17.0.5 based upon LLVM 17.0.5 default target arm64-apple-darwin23.1.0]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include"]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/Library/Frameworks"]
@@ -155,12 +157,12 @@ events:
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include]
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/System/Library/Frameworks (framework directory)]
         ignore line: [End of search list.]
-        ignore line: [[2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl -search_paths_first -Wl -headerpad_max_install_names -v -Wl -v CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -o cmTC_a9ac9   && :]
+        ignore line: [[2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl -search_paths_first -Wl -headerpad_max_install_names -v -Wl -v CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -o cmTC_5c62a   && :]
         ignore line: [Homebrew clang version 17.0.5]
         ignore line: [Target: arm64-apple-darwin23.1.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /opt/homebrew/opt/llvm/bin]
-        link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_a9ac9 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a]
+        link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_5c62a -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a]
           arg [/usr/bin/ld] ==> ignore
           arg [-demangle] ==> ignore
           arg [-lto_library] ==> ignore, skip following value
@@ -175,11 +177,11 @@ events:
           arg [-syslibroot] ==> ignore
           arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_a9ac9] ==> ignore
+          arg [cmTC_5c62a] ==> ignore
           arg [-search_paths_first] ==> ignore
           arg [-headerpad_max_install_names] ==> ignore
           arg [-v] ==> ignore
-          arg [CMakeFiles/cmTC_a9ac9.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [CMakeFiles/cmTC_5c62a.dir/CMakeCCompilerABI.c.o] ==> ignore
           arg [-lSystem] ==> lib [System]
           arg [/opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a] ==> lib [/opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a]
         remove lib [System]
@@ -193,14 +195,14 @@ events:
   -
     kind: "try_compile-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "CMakeLists.txt:2 (project)"
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM"
-      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM"
+      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9"
+      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9"
     cmakeVariables:
       CMAKE_CXX_FLAGS: ""
       CMAKE_CXX_FLAGS_DEBUG: "-g"
@@ -212,16 +214,17 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM
+        Change Dir: '/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9'
         
-        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_a2a5f && [1/2] /opt/homebrew/opt/llvm/bin/clang++   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl,-v -MD -MT CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXCompilerABI.cpp
+        Run Build Command(s): /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -v cmTC_2aff9
+        [1/2] /opt/homebrew/opt/llvm/bin/clang++   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl,-v -MD -MT CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -c /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp
         Homebrew clang version 17.0.5
         Target: arm64-apple-darwin23.1.0
         Thread model: posix
         InstalledDir: /opt/homebrew/opt/llvm/bin
         clang++: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
          (in-process)
-         "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /opt/homebrew/opt/llvm/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdeprecated-macro -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXCompilerABI.cpp
+         "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9 -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /opt/homebrew/opt/llvm/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdeprecated-macro -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9 -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp
         clang -cc1 version 17.0.5 based upon LLVM 17.0.5 default target arm64-apple-darwin23.1.0
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include"
         ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/Library/Frameworks"
@@ -232,12 +235,12 @@ events:
          /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include
          /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/System/Library/Frameworks (framework directory)
         End of search list.
-        [2/2] : && /opt/homebrew/opt/llvm/bin/clang++ -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_a2a5f   && :
+        [2/2] : && /opt/homebrew/opt/llvm/bin/clang++ -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -v -Wl,-v CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_2aff9   && :
         Homebrew clang version 17.0.5
         Target: arm64-apple-darwin23.1.0
         Thread model: posix
         InstalledDir: /opt/homebrew/opt/llvm/bin
-         "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_a2a5f -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a
+         "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_2aff9 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a
         @(#)PROGRAM:ld  PROJECT:dyld-1015.7
         BUILD 18:48:48 Aug 22 2023
         configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
@@ -251,8 +254,8 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "CMakeLists.txt:2 (project)"
     message: |
       Parsed CXX implicit include dir info: rv=done
@@ -271,22 +274,23 @@ events:
   -
     kind: "message-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeDetermineCompilerABI.cmake:152 (message)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "CMakeLists.txt:2 (project)"
     message: |
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
-        ignore line: [Change Dir: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM]
+        ignore line: [Change Dir: '/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9']
         ignore line: []
-        ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_a2a5f && [1/2] /opt/homebrew/opt/llvm/bin/clang++   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl -v -MD -MT CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Run Build Command(s): /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -v cmTC_2aff9]
+        ignore line: [[1/2] /opt/homebrew/opt/llvm/bin/clang++   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics   -v -Wl -v -MD -MT CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -c /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [Homebrew clang version 17.0.5]
         ignore line: [Target: arm64-apple-darwin23.1.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /opt/homebrew/opt/llvm/bin]
         ignore line: [clang++: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
         ignore line: [ (in-process)]
-        ignore line: [ "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /opt/homebrew/opt/llvm/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdeprecated-macro -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-OmRzQM -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [ "/opt/homebrew/Cellar/llvm/17.0.5/bin/clang-17" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.0 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -target-cpu apple-m1 -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +lse -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-feature +zcm -target-feature +zcz -target-feature +fullfp16 -target-abi darwinpcs -debugger-tuning=lldb -target-linker-version 1015.7 -v -fcoverage-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9 -resource-dir /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17 -dependency-file CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -canonical-system-headers -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -internal-isystem /opt/homebrew/opt/llvm/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include -fdeprecated-macro -fdebug-compilation-dir=/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-9b32P9 -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CMakeCXXCompilerABI.cpp]
         ignore line: [clang -cc1 version 17.0.5 based upon LLVM 17.0.5 default target arm64-apple-darwin23.1.0]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/local/include"]
         ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/Library/Frameworks"]
@@ -297,12 +301,12 @@ events:
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/include]
         ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/System/Library/Frameworks (framework directory)]
         ignore line: [End of search list.]
-        ignore line: [[2/2] : && /opt/homebrew/opt/llvm/bin/clang++ -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl -search_paths_first -Wl -headerpad_max_install_names -v -Wl -v CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_a2a5f   && :]
+        ignore line: [[2/2] : && /opt/homebrew/opt/llvm/bin/clang++ -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl -search_paths_first -Wl -headerpad_max_install_names -v -Wl -v CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_2aff9   && :]
         ignore line: [Homebrew clang version 17.0.5]
         ignore line: [Target: arm64-apple-darwin23.1.0]
         ignore line: [Thread model: posix]
         ignore line: [InstalledDir: /opt/homebrew/opt/llvm/bin]
-        link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_a2a5f -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a]
+        link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/17.0.5/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.0 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -o cmTC_2aff9 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a]
           arg [/usr/bin/ld] ==> ignore
           arg [-demangle] ==> ignore
           arg [-lto_library] ==> ignore, skip following value
@@ -317,11 +321,11 @@ events:
           arg [-syslibroot] ==> ignore
           arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
           arg [-o] ==> ignore
-          arg [cmTC_a2a5f] ==> ignore
+          arg [cmTC_2aff9] ==> ignore
           arg [-search_paths_first] ==> ignore
           arg [-headerpad_max_install_names] ==> ignore
           arg [-v] ==> ignore
-          arg [CMakeFiles/cmTC_a2a5f.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [CMakeFiles/cmTC_2aff9.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
           arg [-lc++] ==> lib [c++]
           arg [-lSystem] ==> lib [System]
           arg [/opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a] ==> lib [/opt/homebrew/Cellar/llvm/17.0.5/lib/clang/17/lib/darwin/libclang_rt.osx.a]
@@ -336,16 +340,16 @@ events:
   -
     kind: "try_compile-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CheckCSourceCompiles.cmake:76 (cmake_check_source_compiles)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
       - "/opt/homebrew/opt/llvm/lib/cmake/llvm/FindFFI.cmake:44 (check_c_source_compiles)"
       - "/opt/homebrew/opt/llvm/lib/cmake/llvm/LLVMConfig.cmake:252 (find_package)"
       - "CMakeLists.txt:10 (find_package)"
     checks:
       - "Performing Test HAVE_FFI_CALL"
     directories:
-      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-8s2r1R"
-      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-8s2r1R"
+      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0ohkpr"
+      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0ohkpr"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -358,24 +362,25 @@ events:
       variable: "HAVE_FFI_CALL"
       cached: true
       stdout: |
-        Change Dir: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-8s2r1R
+        Change Dir: '/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0ohkpr'
         
-        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_3266c && [1/2] /opt/homebrew/opt/llvm/bin/clang -DHAVE_FFI_CALL  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_3266c.dir/src.c.o -MF CMakeFiles/cmTC_3266c.dir/src.c.o.d -o CMakeFiles/cmTC_3266c.dir/src.c.o -c /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-8s2r1R/src.c
-        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_3266c.dir/src.c.o -o cmTC_3266c  /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libffi.tbd && :
+        Run Build Command(s): /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -v cmTC_e4486
+        [1/2] /opt/homebrew/opt/llvm/bin/clang -DHAVE_FFI_CALL  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_e4486.dir/src.c.o -MF CMakeFiles/cmTC_e4486.dir/src.c.o.d -o CMakeFiles/cmTC_e4486.dir/src.c.o -c /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0ohkpr/src.c
+        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_e4486.dir/src.c.o -o cmTC_e4486  /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libffi.tbd && :
         
       exitCode: 0
   -
     kind: "try_compile-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CheckIncludeFile.cmake:95 (try_compile)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CheckIncludeFile.cmake:90 (try_compile)"
       - "/opt/homebrew/opt/llvm/lib/cmake/llvm/FindLibEdit.cmake:28 (check_include_file)"
       - "/opt/homebrew/opt/llvm/lib/cmake/llvm/LLVMConfig.cmake:259 (find_package)"
       - "CMakeLists.txt:10 (find_package)"
     checks:
       - "Looking for histedit.h"
     directories:
-      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0BZxY9"
-      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0BZxY9"
+      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-SLjPcZ"
+      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-SLjPcZ"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -388,25 +393,26 @@ events:
       variable: "HAVE_HISTEDIT_H"
       cached: true
       stdout: |
-        Change Dir: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0BZxY9
+        Change Dir: '/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-SLjPcZ'
         
-        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_256d6 && [1/2] /opt/homebrew/opt/llvm/bin/clang   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_256d6.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_256d6.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_256d6.dir/CheckIncludeFile.c.o -c /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-0BZxY9/CheckIncludeFile.c
-        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_256d6.dir/CheckIncludeFile.c.o -o cmTC_256d6  /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libedit.tbd && :
+        Run Build Command(s): /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -v cmTC_e9557
+        [1/2] /opt/homebrew/opt/llvm/bin/clang   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_e9557.dir/CheckIncludeFile.c.o -MF CMakeFiles/cmTC_e9557.dir/CheckIncludeFile.c.o.d -o CMakeFiles/cmTC_e9557.dir/CheckIncludeFile.c.o -c /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-SLjPcZ/CheckIncludeFile.c
+        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_e9557.dir/CheckIncludeFile.c.o -o cmTC_e9557  /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libedit.tbd && :
         
       exitCode: 0
   -
     kind: "try_compile-v1"
     backtrace:
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
-      - "/Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.26/Modules/CheckCSourceCompiles.cmake:76 (cmake_check_source_compiles)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/share/cmake-3.27/Modules/CheckCSourceCompiles.cmake:52 (cmake_check_source_compiles)"
       - "/opt/homebrew/opt/llvm/lib/cmake/llvm/FindTerminfo.cmake:21 (check_c_source_compiles)"
       - "/opt/homebrew/opt/llvm/lib/cmake/llvm/LLVMConfig.cmake:264 (find_package)"
       - "CMakeLists.txt:10 (find_package)"
     checks:
       - "Performing Test Terminfo_LINKABLE"
     directories:
-      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-x8x7M4"
-      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-x8x7M4"
+      source: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DrKgwZ"
+      binary: "/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DrKgwZ"
     cmakeVariables:
       CMAKE_C_FLAGS: ""
       CMAKE_C_FLAGS_DEBUG: "-g"
@@ -419,10 +425,11 @@ events:
       variable: "Terminfo_LINKABLE"
       cached: true
       stdout: |
-        Change Dir: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-x8x7M4
+        Change Dir: '/Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DrKgwZ'
         
-        Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja -v cmTC_a2d49 && [1/2] /opt/homebrew/opt/llvm/bin/clang -DTerminfo_LINKABLE  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_a2d49.dir/src.c.o -MF CMakeFiles/cmTC_a2d49.dir/src.c.o.d -o CMakeFiles/cmTC_a2d49.dir/src.c.o -c /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-x8x7M4/src.c
-        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_a2d49.dir/src.c.o -o cmTC_a2d49  /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libcurses.tbd && :
+        Run Build Command(s): /Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -v cmTC_6d273
+        [1/2] /opt/homebrew/opt/llvm/bin/clang -DTerminfo_LINKABLE  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -fcolor-diagnostics -MD -MT CMakeFiles/cmTC_6d273.dir/src.c.o -MF CMakeFiles/cmTC_6d273.dir/src.c.o.d -o CMakeFiles/cmTC_6d273.dir/src.c.o -c /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DrKgwZ/src.c
+        [2/2] : && /opt/homebrew/opt/llvm/bin/clang -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/cmTC_6d273.dir/src.c.o -o cmTC_6d273  /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libcurses.tbd && :
         
       exitCode: 0
 ...

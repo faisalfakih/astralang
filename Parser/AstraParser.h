@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#define LOG(x) std::cout << x << std::endl;
 
 class Parser {
 private:
@@ -298,13 +299,11 @@ private:
             case TokenType::TOKEN_VOID_TYPE:
             case TokenType::TOKEN_LET:
             case TokenType::TOKEN_CONST:
-                parseVariableDeclaration();
-                break;
+                return parseVariableDeclaration();
             case TokenType::TOKEN_IDENTIFIER:
                 if (peek(1).type == TokenType::TOKEN_IDENTIFIER)
-                    parseVariableDeclaration();
-                parseVariableReassignment();
-                break;
+                    return parseVariableDeclaration();
+                return parseVariableReassignment();
             case TokenType::TOKEN_RETURN:
                 return parseReturnStatement();
             case TokenType::TOKEN_BREAK:
@@ -319,19 +318,23 @@ private:
 
 
     std::unique_ptr<BlockStatement> parseBlockStatement() {
-        consumeToken();  // Consume the opening brace TOKEN_LBRACE
+        expect(TokenType::TOKEN_LBRACE); // Consume the opening brace
         std::vector<std::unique_ptr<Statement>> statements;
 
-        consumeOptionalNewlines();  // Consume newlines if they exist
+        consumeOptionalNewlines(); // Consume newlines if they exist
 
-        while (!checkTokenType(TokenType::TOKEN_RBRACE) && !checkTokenType(TokenType::TOKEN_EOF)) {
-            statements.push_back(parseStatement());
-            consumeOptionalNewlines();  // Consume newlines between statements
+        while (!checkTokenType(TokenType::TOKEN_RBRACE) && !isAtEnd()) {
+            std::unique_ptr<Statement> statement = parseStatement();
+            if (statement) {
+                statements.push_back(std::move(statement));
+            }
+            consumeOptionalNewlines(); // Consume newlines between statements
         }
 
-        expect(TokenType::TOKEN_RBRACE);  // Ensure the closing brace TOKEN_RBRACE is present and consume it
+        expect(TokenType::TOKEN_RBRACE); // Ensure the closing brace is present and consume it
         return std::make_unique<BlockStatement>(std::move(statements));
     }
+
 
     // Skip optional new line
     void consumeOptionalNewlines() {
@@ -496,17 +499,14 @@ private:
     std::unique_ptr<FunctionDeclaration> parseFunctionDeclaration() {
         expect(TokenType::TOKEN_FUNC);
         if (currentToken().type != TokenType::TOKEN_IDENTIFIER) {
-            throw std::runtime_error("Expected a currentFunction name after 'func' at line " + std::to_string(currentToken().line) + ".");
+            throw std::runtime_error("Expected a function name after 'func' at line " + std::to_string(currentToken().line) + ".");
         }
-        FunctionDeclaration::Kind kind = FunctionDeclaration::Kind::REGULAR;
-
         std::string functionName = currentToken().lexeme;
-
         consumeToken();
 
         std::vector<std::unique_ptr<Parameter>> params = parseParameters();
 
-        // Check if the currentFunction returns a type
+        // Check if the function returns a type
         std::unique_ptr<TypeRepresentation> returnType = nullptr;
         if (checkTokenType(TokenType::TOKEN_ARROW)) {
             consumeToken();
@@ -516,16 +516,24 @@ private:
             }
         }
 
+        // Parse the function body
         std::unique_ptr<BlockStatement> body;
-        // Code block
         if (checkTokenType(TokenType::TOKEN_LBRACE)) {
             body = parseBlockStatement();
         } else {
-            throw std::runtime_error("Expected open bracket at line " + std::to_string(currentToken().line));
+            throw std::runtime_error("Expected '{' at line " + std::to_string(currentToken().line));
         }
 
-        return std::make_unique<FunctionDeclaration>(functionName, std::move(params), std::move(returnType), std::move(body), kind);
+        // Check for a return statement if the function is not void
+        if (returnType) {
+            if (body->statements.empty() || dynamic_cast<ReturnStatement*>(body->statements.back().get()) == nullptr) {
+                throw std::runtime_error("Missing return statement in function '" + functionName + "'");
+            }
+        }
+
+        return std::make_unique<FunctionDeclaration>(functionName, std::move(params), std::move(returnType), std::move(body), FunctionDeclaration::Kind::REGULAR);
     }
+
 
     // Parse Variable Declarations
     bool isTypeName(TokenType tokenType) {

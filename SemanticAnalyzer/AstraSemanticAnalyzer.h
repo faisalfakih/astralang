@@ -78,6 +78,11 @@ private:
                 analyzeIfStatement(ifStatement);
                 break;
             }
+            case ASTNodeType::ReturnStatement: {
+                const ReturnStatement* returnStmt = dynamic_cast<const ReturnStatement*>(node);
+                analyzeReturnStatement(returnStmt);
+                break;
+            }
             default:
                 throw std::runtime_error("ERROR ENCOUNTERED");
         }
@@ -180,16 +185,6 @@ private:
         }
 
         if (lhsType->isPointerTy() && rhsType->isPointerTy()) {
-//            llvm::AllocaInst* lhsAlloca = llvm::dyn_cast<llvm::AllocaInst>(lhsType);
-//            llvm::AllocaInst* rhsAlloca = llvm::dyn_cast<llvm::AllocaInst>(rhsType);
-//            if (lhsAlloca && rhsAlloca) {
-//                llvm::Type* lhsPointerType = lhsAlloca->getAllocatedType();
-//                llvm::Type* rhsPointerType = rhsAlloca->getAllocatedType();
-//                if (!compareDataTypes(lhsPointerType, rhsPointerType)) {
-//                    throw std::runtime_error("Type mismatch in pointer assignment of variable " + varDecl->name);
-//                }
-//            }
-
             llvm::Value* lhsValue = symbolTable[varDecl->name];
             llvm::Value* rhsValue = evaluateExpression(rhs);
 
@@ -313,13 +308,37 @@ private:
             symbolTable[arg.getName().str()] = &arg;
             ++idx;
         }
-
+        std::cout << funcDecl->body->statements.size() << std::endl;
         for (const std::unique_ptr<Statement>& stmt : funcDecl->body->statements) {
+            if (stmt == nullptr) {LOG("NULLPTR");}
+            else {LOG("NOT NULLPTR");}
             analyzeNode(stmt.get());
         }
 
         exitCurrentScope();
         currentFunction = nullptr;
+    }
+
+    void analyzeReturnStatement(const ReturnStatement* returnStmt) {
+        if (!currentFunction) {
+            throw std::runtime_error("Return statement not inside a function");
+        }
+
+        llvm::Type* expectedReturnType = currentFunction->getReturnType();
+        llvm::Value* returnValue = nullptr;
+
+        if (returnStmt->returnValue) {
+            returnValue = evaluateExpression(returnStmt->returnValue.get());
+            llvm::Type* returnType = returnValue->getType();
+
+            if (!compareDataTypes(returnType, expectedReturnType)) {
+                throw std::runtime_error("Return type mismatch in function '" + currentFunction->getName().str() + "'");
+            }
+        } else if (!expectedReturnType->isVoidTy()) {
+            throw std::runtime_error("Missing return value in non-void function '" + currentFunction->getName().str() + "'");
+        }
+
+        builder->CreateRet(returnValue);
     }
 
     void analyzeIfStatement(const IfStatement* ifStmt) {

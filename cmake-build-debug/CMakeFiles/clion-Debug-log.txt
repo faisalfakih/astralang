@@ -1,4 +1,4 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -G Ninja -S /Users/faisalfakih/Documents/Astra/astralang -B /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug
+/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -G Ninja -S /Users/faisalfakih/Documents/Astra/astralang -B /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug
 -- The C compiler identification is Clang 17.0.5
 -- The CXX compiler identification is Clang 17.0.5
 -- Detecting C compiler ABI info
@@ -23,6 +23,6 @@
 -- Found ZLIB: /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libz.tbd (found version "1.2.12")  
 -- Found zstd: /opt/homebrew/lib/libzstd.dylib  
 -- Found LibXml2: /Library/Developer/CommandLineTools/SDKs/MacOSX14.0.sdk/usr/lib/libxml2.tbd (found version "2.9.13") 
--- Configuring done (1.2s)
+-- Configuring done (2.0s)
 -- Generating done (0.0s)
 -- Build files have been written to: /Users/faisalfakih/Documents/Astra/astralang/cmake-build-debug
